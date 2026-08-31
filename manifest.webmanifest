@@ -1,0 +1,19 @@
+{
+  "name": "飯盆",
+  "short_name": "飯盆",
+  "description": "10 秒記完一餐，一眼看出蛋白質還差多少。",
+  "lang": "zh-Hant",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "display_override": ["standalone", "minimal-ui"],
+  "orientation": "portrait",
+  "background_color": "#FFF9F0",
+  "theme_color": "#FFF9F0",
+  "categories": ["health", "lifestyle"],
+  "icons": [
+    { "src": "./icons/icon-192.png",          "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512.png",          "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "./icons/icon-512-maskable.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ]
+}
