@@ -13,7 +13,7 @@
 <meta name="application-name" content="飯盆">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
-<!-- build: c7bcf14a0f -->
+<!-- build: 32a4792388 -->
 <title>飯盆</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -42,11 +42,13 @@
   --num:"Nunito","Noto Sans TC",system-ui,sans-serif;
 }
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html{overflow-x:hidden}
 body{
   font-family:var(--body); color:var(--ink);
   background:linear-gradient(155deg,#FFE9A8 0%,#FFD3E2 48%,#CFE8FF 100%);
   background-attachment:fixed;
   min-height:100dvh; line-height:1.5;
+  width:100%; max-width:100%; overflow-x:hidden;
 }
 button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
 input{font:inherit;color:inherit}
@@ -55,14 +57,15 @@ input{font:inherit;color:inherit}
 /* ---------- shell ---------- */
 .app{
   width:100%; max-width:430px; margin:0 auto; background:var(--cream);
-  min-height:100dvh; display:flex; flex-direction:column;
+  height:100vh; height:100dvh; display:flex; flex-direction:column;
   position:relative; overflow:hidden;
 }
 @media(min-width:520px){
   .app{margin:22px auto; height:calc(100dvh - 44px); min-height:600px;
        border-radius:34px; box-shadow:0 26px 60px rgba(61,58,78,.25)}
 }
-.scroll{flex:1; overflow-y:auto; overflow-x:hidden; padding:0 18px 26px; -webkit-overflow-scrolling:touch}
+.scroll{flex:1 1 0; min-height:0; overflow-y:auto; overflow-x:hidden; overscroll-behavior:contain;
+  padding:0 18px 26px}
 
 .topbar{padding:22px 20px 12px; display:flex; align-items:flex-end; justify-content:space-between; gap:12px}
 .hello{font-family:var(--display); font-size:24px; font-weight:800; letter-spacing:.2px}
@@ -127,7 +130,7 @@ input{font:inherit;color:inherit}
   display:block; margin-bottom:2px}
 
 /* ---------- today log ---------- */
-.logcard{padding:4px 16px}
+.logcard{padding:4px 16px; overflow:hidden}
 .logrow{display:flex; align-items:center; gap:11px; padding:9px 0}
 .log-name{flex:1; min-width:0; font-size:14px; font-weight:400;
   overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
@@ -815,7 +818,7 @@ function exportMd(){
 let sheetMeal = "breakfast";
 let sheetMode = "add";      // add＝新增一筆，edit＝修改既有那筆
 let editId = null;
-const emptyDraft = () => ({name:"", kcal:"", protein:"", save:true, servings:"1"});
+const emptyDraft = () => ({name:"", kcal:"", protein:"", save:false, servings:"1"});
 let draft = emptyDraft();
 function captureDraft(){
   const g = id => document.getElementById(id);
@@ -1132,8 +1135,14 @@ document.addEventListener("click", ev => {
 
   if((el = hit("[data-add]")))   {
     const f = S.favorites.find(x=>x.id===el.dataset.add);
-    f.useCount++; f.lastUsedAt = new Date().toISOString();
-    addEntry(f, 1); return;
+    if(!f) return;
+    /* 只把資料帶進上方輸入區，讓使用者確認／微調後再按「紀錄飯盆」 */
+    draft = {name:f.name, kcal:String(f.kcal), protein:String(f.protein),
+             save:false, servings:"1"};
+    renderSheet(false);
+    const body = $("#sheet .sheet-body"); if(body) body.scrollTop = 0;
+    toast(`已帶入「${f.name}」，確認後按紀錄飯盆`);
+    return;
   }
   if((el = hit("[data-swipedel]"))){ removeRow(el.closest(".swipe")); return; }
   if(hit("#toastUndo"))          { const fn = $("#toast")._undo; hideToast(); if(fn) fn(); return; }
@@ -1145,7 +1154,9 @@ document.addEventListener("click", ev => {
     const kcal = parseFloat(draft.kcal), pro = parseFloat(draft.protein);
     if(!name || isNaN(kcal) || isNaN(pro)){ toast("名稱、熱量、蛋白質要填"); return; }
     const food = {name, unit:"份", kcal, protein:pro, fat:0, carbs:0};
-    if(draft.save) S.favorites.push({...food, id:uid(), useCount:1, lastUsedAt:new Date().toISOString()});
+    const fav = S.favorites.find(x => x.name === name);
+    if(fav){ fav.useCount++; fav.lastUsedAt = new Date().toISOString(); }
+    else if(draft.save) S.favorites.push({...food, id:uid(), useCount:1, lastUsedAt:new Date().toISOString()});
     ["nfName","nfKcal","nfPro"].forEach(id=>{
       const e = document.getElementById(id); if(e) e.value = "";
     });
