@@ -13,7 +13,7 @@
 <meta name="application-name" content="飯盆">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
-<!-- build: b5b39ffc29 -->
+<!-- build: 92008a86b9 -->
 <meta charset="utf-8">
 <title>飯盆</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -96,6 +96,36 @@ input{font:inherit;color:inherit}
   transform:translateZ(0); backface-visibility:hidden; will-change:transform;
   animation:catbob 4.2s ease-in-out infinite}
 @keyframes catbob{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-4px,0)}}
+
+/* ---------- 貓咪對話框 ---------- */
+.cat-stage{display:flex; flex-direction:column; align-items:center; gap:12px; margin-top:6px}
+.cat-bubble{
+  position:relative; max-width:280px; margin:0 auto;
+  background:var(--card); color:var(--ink);
+  border-radius:18px; padding:11px 15px 12px;
+  font-size:13px; line-height:1.55; font-weight:500; text-align:center;
+  box-shadow:var(--shadow-soft); cursor:pointer;
+  transition:transform .18s var(--spring), box-shadow .18s;
+  animation:bubblepop .34s var(--spring) both;
+}
+.cat-bubble:hover{box-shadow:var(--shadow-pop)}
+.cat-bubble:active{transform:scale(.97)}
+.cat-bubble b{color:var(--pink-cta); font-weight:800; font-family:var(--num);
+  font-variant-numeric:tabular-nums}
+/* 泡泡尾巴：兩個小圓點指向貓咪 */
+.cat-bubble::after,.cat-bubble::before{content:""; position:absolute; left:50%;
+  background:var(--card); border-radius:50%; box-shadow:var(--shadow-soft)}
+.cat-bubble::after{width:10px; height:10px; bottom:-7px; margin-left:-16px}
+.cat-bubble::before{width:6px; height:6px; bottom:-16px; margin-left:-4px}
+.cat-bubble .bubble-hint{display:block; margin-top:5px; font-size:10.5px;
+  font-weight:600; color:var(--ink-30); letter-spacing:.3px}
+@keyframes bubblepop{
+  0%{opacity:0; transform:translateY(6px) scale(.9)}
+  100%{opacity:1; transform:translateY(0) scale(1)}
+}
+@media(prefers-reduced-motion:reduce){
+  .cat-bubble{animation:none}
+}
 
 /* ---------- 今日進度長條 ---------- */
 .barcard{padding:20px 18px 16px; background:
@@ -239,7 +269,8 @@ input{font:inherit;color:inherit}
 .field{background:#fff;border-radius:var(--r-field);padding:8px 12px;box-shadow:var(--shadow-soft)}
 .field label{display:block;font-size:10.5px;font-weight:700;color:var(--ink-60)}
 .field label .req{color:var(--pink-deep);font-style:normal;margin-left:1px}
-.field input{width:100%;border:0;background:none;font-family:var(--num);font-size:15px;font-weight:700;padding:1px 0}
+/* font-size 一定要 >=16px，否則 iOS Safari 聚焦時會自動放大整個畫面，關掉面板後縮放不會還原 → 跑版 */
+.field input{width:100%;border:0;background:none;font-family:var(--num);font-size:16px;font-weight:700;padding:1px 0}
 .field input:focus{outline:none}
 .field:focus-within{box-shadow:0 0 0 2px var(--blue)}
 .span2{grid-column:span 2}
@@ -535,9 +566,166 @@ function render(){
   openRow = null; drag = null;
   view.innerHTML = ({today:viewToday, history:viewHistory, trends:viewTrends, settings:viewSettings})[tab]();
   view.firstElementChild && view.firstElementChild.classList.add("fade");
-  if(tab==="today") paintBars();
+  if(tab==="today"){ paintBars(); paintCatBubble(); }
   if(tab==="trends") drawCharts();
   view.scrollTop = 0;
+}
+
+/* ---------------- 貓咪對話 ---------------- */
+/* 文字模板：{food} 食物名、{kcal} 這筆熱量、{pro} 這筆蛋白質、
+   {room} 還能吃多少 kcal、{left} 還差多少蛋白質 g */
+const CAT_TALK = {
+  empty: [
+    "飯盆是空的…喵？今天還沒開張。",
+    "肚子在叫了，先吃點蛋白質好嗎？",
+    "等你按右下角的 ＋，我就有飯吃了。",
+    "空盆一個。要不要先來杯無糖豆漿？",
+  ],
+  over: [
+    "喵！已經超出 <b>{over}</b> kcal 了，明天再繼續。",
+    "今天的赤字被 {food} 吃掉了，沒關係，睡飽比較重要。",
+    "超標了喔…不如晚點去散個步？",
+    "吃過頭啦，但你今天有好好記錄，這也算贏。",
+  ],
+  done: [
+    "赤字有了、蛋白質也夠，今天完美收工！",
+    "雙達標！我要在你腿上躺一下。",
+    "蛋白質吃滿了，肌肉會謝謝你的喵。",
+  ],
+  egg: [
+    "{food}！蛋是最省事的 <b>{pro}</b> g 蛋白質。",
+    "蛋黃不用怕，剝殼的時候記得留一口給我。",
+    "又是蛋…你真的很愛蛋耶，不過很聰明。",
+    "{pro} g 蛋白質入袋，還差 <b>{left}</b> g。",
+  ],
+  soy: [
+    "{food}，植物蛋白也很讚喵。",
+    "豆味我不太懂，但 <b>{pro}</b> g 蛋白質我懂。",
+    "清爽路線，還剩 <b>{room}</b> kcal 可以用。",
+    "豆製品配一點蔬菜，晚上會很舒服。",
+  ],
+  dairy: [
+    "{food} 下肚，<b>{pro}</b> g 蛋白質輕鬆入手。",
+    "這杯很划算喵，熱量低蛋白高。",
+    "喝完別忘記今天還差 <b>{left}</b> g 蛋白質。",
+    "乳製品讓我想到牛奶…可以分我一點嗎？",
+  ],
+  meat: [
+    "{food}！<b>{pro}</b> g 蛋白質，我的最愛。",
+    "肉肉！給我一小塊…好啦，你自己吃。",
+    "這種吃法最有效率，還剩 <b>{room}</b> kcal。",
+    "蛋白質補得很到位，還差 <b>{left}</b> g 就滿了。",
+  ],
+  drink: [
+    "{food} 要 <b>{kcal}</b> kcal，喝起來很快、消起來很慢喵。",
+    "一杯飲料等於一餐的一半，換無糖會更好。",
+    "好喝我知道，但今天只剩 <b>{room}</b> kcal 了。",
+    "液體熱量最容易忘記，我幫你記著。",
+  ],
+  bento: [
+    "{food}，<b>{kcal}</b> kcal 一次到位。",
+    "便當很方便，但飯記得留一點點。",
+    "吃了大餐，今天還剩 <b>{room}</b> kcal 額度。",
+    "肉多的便當是好選擇，<b>{pro}</b> g 蛋白質。",
+  ],
+  carb: [
+    "{food}，<b>{kcal}</b> kcal 的澱粉能量喵。",
+    "碳水不是壞人，配蛋白質一起吃就好。",
+    "有力氣才有肌肉，但還差 <b>{left}</b> g 蛋白質喔。",
+    "澱粉下肚，剩 <b>{room}</b> kcal 給晚點的自己。",
+  ],
+  veg: [
+    "{food}！纖維讓你比較有飽足感喵。",
+    "蔬菜幾乎不佔額度，多吃一點也沒關係。",
+    "很清爽的選擇，還剩 <b>{room}</b> kcal。",
+    "菜菜我不吃，但我尊重你。",
+  ],
+  sweet: [
+    "{food}…<b>{kcal}</b> kcal，甜甜的代價喵。",
+    "偶爾放縱沒問題，明天照常記錄就好。",
+    "吃完甜的，等等記得補蛋白質。",
+    "還剩 <b>{room}</b> kcal，你自己拿捏喔。",
+  ],
+  fried: [
+    "{food}，<b>{kcal}</b> kcal，油香我隔著螢幕都聞到了。",
+    "炸物很快樂，明天回到正軌就好。",
+    "這一筆吃掉不少額度，只剩 <b>{room}</b> kcal。",
+  ],
+  light: [
+    "{food} 只有 <b>{kcal}</b> kcal，超划算喵。",
+    "很輕的一筆，還有 <b>{room}</b> kcal 可以用。",
+    "小點心而已，不用有罪惡感。",
+  ],
+  heavy: [
+    "{food} 是重量級的 <b>{kcal}</b> kcal。",
+    "大餐！那接下來就吃清爽一點吧。",
+    "扣完剩 <b>{room}</b> kcal，慢慢用。",
+  ],
+  def: [
+    "記下 {food} 了，<b>{kcal}</b> kcal、蛋白 <b>{pro}</b> g。",
+    "收到喵！還差 <b>{left}</b> g 蛋白質。",
+    "今天還能吃 <b>{room}</b> kcal，別餓著自己。",
+    "有記錄就有進步，繼續喵。",
+  ],
+};
+/* 先看名字關鍵字，認不出來再用營養素判斷 */
+const FOOD_KEYS = [
+  ["dairy", /優格|優酪|乳清|牛奶|鮮奶|起司|乳酪/],
+  ["egg",   /蛋(?![白糕])/],
+  ["drink", /拿鐵|咖啡|奶茶|紅茶|綠茶|果汁|可樂|飲料|冰沙/],
+  ["soy",   /豆漿|豆腐|豆干|毛豆|黃豆|天貝|素/],
+  ["bento", /便當|餐盒|自助餐|快餐/],
+  ["fried", /炸|鹹酥|薯條|天婦羅|可樂餅/],
+  ["meat",  /雞|豬|牛|羊|魚|蝦|鮭|鮪|肉|排/],
+  ["sweet", /蛋糕|餅乾|巧克力|冰淇淋|甜點|布丁|麵包(?=.*甜)|糖/],
+  ["carb",  /飯|麵|粥|吐司|麵包|地瓜|馬鈴薯|饅頭|水餃|包子/],
+  ["veg",   /菜|沙拉|花椰|菇|海帶|番茄|小黃瓜/],
+];
+function foodMood(e){
+  for(const [key, re] of FOOD_KEYS) if(re.test(e.name)) return key;
+  const kcal = e.kcal * e.servings, pro = e.protein * e.servings;
+  if(kcal >= 500) return "heavy";
+  if(kcal > 0 && pro / kcal >= 0.09) return "meat";   // 每 100 kcal 有 9 g 以上蛋白質
+  if(kcal <= 120) return "light";
+  return "def";
+}
+function hashStr(s){ let h = 0; for(let i=0;i<s.length;i++) h = (h*31 + s.charCodeAt(i)) >>> 0; return h; }
+
+let catNudge = 0;   // 點一下泡泡就換下一句
+function catBubbleHtml(){
+  const t = totalsOf(iso(new Date()));
+  const log = MEALS.flatMap(m => dayOf(iso(new Date())).meals[m.id] || []);
+  const last = log[log.length - 1];
+  const room = kcalLimit() - t.kcal, left = S.settings.proteinTarget - t.protein;
+
+  let pool;
+  if(!last)          pool = CAT_TALK.empty;
+  else if(room < 0)  pool = CAT_TALK.over;
+  else if(dayHit(t)) pool = CAT_TALK.done.concat(CAT_TALK[foodMood(last)] || CAT_TALK.def);
+  else               pool = CAT_TALK[foodMood(last)] || CAT_TALK.def;
+
+  /* 額度已滿／蛋白質已達標時，別講出「還差 0 g」這種怪句子 */
+  const usable = pool.filter(l => (left > 0 || !l.includes("{left}"))
+                               && (room > 0 || !l.includes("{room}")));
+  if(usable.length) pool = usable;
+
+  const seed = hashStr((last ? last.id + last.name : "empty") + log.length);
+  const line = pool[(seed + catNudge) % pool.length];
+  const vals = {
+    food: last ? esc(last.name) : "",
+    kcal: last ? r0(last.kcal * last.servings) : 0,
+    pro:  last ? r0(last.protein * last.servings) : 0,
+    room: r0(Math.max(room, 0)),
+    over: r0(Math.max(-room, 0)),
+    left: r0(Math.max(left, 0)),
+  };
+  return line.replace(/\{(\w+)\}/g, (m, k) => k in vals ? vals[k] : m);
+}
+function paintCatBubble(){
+  const b = $("#catBubble");
+  if(!b) return;
+  b.innerHTML = catBubbleHtml() + `<span class="bubble-hint">點我換一句</span>`;
+  b.style.animation = "none"; void b.offsetWidth; b.style.animation = "";
 }
 
 /* ---------------- 今天 ---------------- */
@@ -601,7 +789,11 @@ function viewToday(){
     </div>
     <div class="sec-title">今天吃了什麼</div>
     ${logRows}
-    <div class="hero-cat" role="img" aria-label="小貓在吃飯"></div>
+    <div class="cat-stage">
+      <div class="cat-bubble" id="catBubble" role="button" tabindex="0"
+           aria-live="polite" aria-label="貓咪說的話，點一下換一句"></div>
+      <div class="hero-cat" role="img" aria-label="小貓在吃飯"></div>
+    </div>
   </div>`;
 }
 function paintBars(){
@@ -816,9 +1008,6 @@ function viewSettings(){
         <div class="numfield"><input type="number" data-set="tdee" value="${S.settings.tdee}"><span>kcal</span></div></div>
       <div class="row"><div class="rl">每日赤字<small>300–500 kcal 大約每週掉 0.3–0.5 kg</small></div>
         <div class="numfield"><input type="number" data-set="deficit" value="${S.settings.deficit}"><span>kcal</span></div></div>
-      <div class="row"><div class="rl">每日熱量上限<small>TDEE − 赤字・吃在這以內才算達標</small></div>
-        <div class="numfield" style="background:none">
-          <b id="limitOut" style="font-family:var(--num);font-size:16px;font-weight:800">${kcalLimit()}</b><span>kcal</span></div></div>
       <div class="row"><div class="rl">每日蛋白質<small>減脂期建議 1.6–2.2 g／kg 體重</small></div>
         <div class="numfield"><input type="number" data-set="proteinTarget" value="${S.settings.proteinTarget}"><span>g</span></div></div>
       <div class="row"><div class="rl">每餐蛋白質<small>平均分配比集中一餐更好</small></div>
@@ -877,8 +1066,12 @@ function openSheet(){
   $("#backdrop").classList.add("open");
 }
 const closeSheet = () => {
+  /* 先收鍵盤再關面板：iOS 若停在輸入框聚焦狀態，視窗會維持放大／偏移造成跑版 */
+  const focused = document.activeElement;
+  if(focused && typeof focused.blur === "function") focused.blur();
   $("#backdrop").classList.remove("open");
   sheetMode = "add"; editId = null;
+  window.scrollTo(0, 0);
 };
 /* 點今天的某一列 → 用同一個面板改內容、單份熱量／蛋白質、份數 */
 function openEdit(id){
@@ -1174,6 +1367,7 @@ document.addEventListener("click", ev => {
 
   if((el = hit(".tab")))        { tab = el.dataset.tab; render(); return; }
   if(hit("#fab"))               { openSheet(); return; }
+  if(hit("#catBubble"))         { catNudge++; paintCatBubble(); return; }
   if(hit("#closeSheet"))        { closeSheet(); return; }
   if(ev.target.id === "backdrop"){ closeSheet(); return; }
   if(hit("#doneOk") || ev.target.id === "doneModal"){ closeDone(); return; }
@@ -1229,8 +1423,6 @@ document.addEventListener("change", ev => {
   S.settings[el.dataset.set] = v;
   save();
   lastHit = dayHit(totalsOf(iso(new Date())));
-  const out = $("#limitOut");            // 上限是推算的，改 TDEE／赤字要跟著更新
-  if(out) out.textContent = kcalLimit();
 });
 document.addEventListener("input", ev => {
   if(sheetMode !== "edit" || !ev.target.closest(".sheet")) return;
@@ -1241,6 +1433,7 @@ document.addEventListener("input", ev => {
 document.addEventListener("keydown", ev => {
   if(ev.key==="Escape"){ closeDone(); closeSheet(); return; }
   if(ev.key==="Enter" || ev.key===" "){
+    if(ev.target.id === "catBubble"){ ev.preventDefault(); catNudge++; paintCatBubble(); return; }
     const fg = ev.target.closest && ev.target.closest(".swipe-fg");
     if(fg){ ev.preventDefault(); openEdit(fg.closest(".swipe").dataset.entry); }
   }
