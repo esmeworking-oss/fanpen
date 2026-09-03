@@ -13,7 +13,8 @@
 <meta name="application-name" content="飯盆">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
-<!-- build: 32a4792388 -->
+<!-- build: b5b39ffc29 -->
+<meta charset="utf-8">
 <title>飯盆</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -37,6 +38,8 @@
   --r-card:20px; --r-pill:999px; --r-field:16px;
   --spring:cubic-bezier(.34,1.4,.5,1);
   --swipe-w:88px;
+  --tabbar-h:78px;              /* tabbar 內容高（不含安全區） */
+  --tabbar-total:calc(var(--tabbar-h) + env(safe-area-inset-bottom));
   --display:"Baloo 2","Noto Sans TC",system-ui,sans-serif;
   --body:"Noto Sans TC","Nunito",system-ui,sans-serif;
   --num:"Nunito","Noto Sans TC",system-ui,sans-serif;
@@ -86,7 +89,7 @@ input{font:inherit;color:inherit}
 .sec-title{font-family:var(--display); font-size:16px; font-weight:700; padding:2px 4px 0}
 
 /* ---------- 首頁插圖 ---------- */
-.hero-cat{flex:1; min-width:78px; height:118px; align-self:center;
+.hero-cat{width:132px; height:118px; margin:2px auto 4px; align-self:center;
   position:relative}
 .hero-cat::before{content:""; position:absolute; inset:0;
   background:url("data:image/png;base64,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") center center/contain no-repeat;
@@ -94,31 +97,31 @@ input{font:inherit;color:inherit}
   animation:catbob 4.2s ease-in-out infinite}
 @keyframes catbob{0%,100%{transform:translate3d(0,0,0)}50%{transform:translate3d(0,-4px,0)}}
 
-/* ---------- rings ---------- */
-.ringcard{padding:20px 18px 18px; text-align:center; background:
+/* ---------- 今日進度長條 ---------- */
+.barcard{padding:20px 18px 16px; background:
    radial-gradient(120% 90% at 50% 0%, #FFFDF7 0%, #FFFFFF 60%)}
-.ringrow{display:flex; align-items:flex-end; justify-content:center; gap:10px}
-.ringwrap{position:relative; flex:none; width:186px; height:186px; margin:2px 0 4px}
-.rings{width:100%; height:100%; display:block; transform:rotate(-90deg)}
-.rings circle{fill:none; stroke-linecap:round}
-.rings .track{stroke:var(--sunk)}
-.rings .bar{transition:stroke-dashoffset .85s var(--spring), stroke .3s ease}
-.ringcenter{position:absolute; inset:0; display:flex; flex-direction:column;
-  align-items:center; justify-content:center; gap:1px}
-.big{font-family:var(--num); font-size:32px; font-weight:800; line-height:1;
-  font-variant-numeric:tabular-nums; letter-spacing:-.5px}
-.big-sub{font-size:12px; color:var(--ink-60); font-weight:500; font-variant-numeric:tabular-nums}
-
-.chips{display:flex; gap:8px; justify-content:center; margin-top:12px; flex-wrap:wrap}
-.chip{display:flex; align-items:center; gap:7px; background:none;
-  padding:7px 12px}
+.bars{display:flex; flex-direction:column; gap:18px}
+.bar-head{display:flex; align-items:flex-end; gap:8px; margin-bottom:8px}
+.bar-label{display:flex; align-items:center; gap:7px; font-size:13.5px; font-weight:500}
+.bar-val{margin-left:auto; font-family:var(--num); font-variant-numeric:tabular-nums;
+  white-space:nowrap; line-height:1}
+.bar-val b{font-size:21px; font-weight:800; letter-spacing:-.4px}
+.bar-val span{font-size:12px; font-weight:600; color:var(--ink-60)}
+.bar-track{position:relative; height:14px; border-radius:var(--r-pill);
+  background:var(--sunk); overflow:hidden}
+.bar-fill{position:absolute; left:0; top:0; bottom:0; width:0;
+  border-radius:var(--r-pill); background:var(--ink-30);
+  transition:width .85s var(--spring), background-color .3s ease}
+/* 超過上限：加斜紋，不靠顏色單一訊號 */
+.bar-fill.over{background-image:repeating-linear-gradient(115deg,
+  rgba(255,255,255,.55) 0 4px, rgba(255,255,255,0) 4px 9px)}
 .dot{width:9px;height:9px;border-radius:50%;flex:none}
-.chip b{font-family:var(--num); font-size:14px; font-variant-numeric:tabular-nums}
-.chip span{font-size:11.5px; color:var(--ink-60)}
 .status{margin-top:14px; font-size:13.5px; font-weight:500; line-height:1.55;
   color:var(--ink-60); padding:10px 6px 2px}
 .status b{color:var(--ink)}
 .status.done{color:var(--mint-deep); font-weight:700}
+.status.over{color:var(--peach-deep); font-weight:700}
+.status.warn{color:var(--lilac-deep); font-weight:700}
 
 /* ---------- note ---------- */
 .note{display:flex; gap:12px; align-items:flex-start; padding:15px 16px}
@@ -170,6 +173,7 @@ input{font:inherit;color:inherit}
 
 /* ---------- tabbar + fab ---------- */
 .tabbar{display:flex; padding:8px 10px calc(8px + env(safe-area-inset-bottom));
+  height:var(--tabbar-total);
   background:#fff; border-top:1px solid var(--line); flex:none}
 .tab{flex:1; display:flex; flex-direction:column; align-items:center; gap:3px;
   padding:7px 0 5px; border-radius:16px; color:var(--ink-30); font-size:10.5px; font-weight:700;
@@ -183,7 +187,7 @@ input{font:inherit;color:inherit}
 .tab[aria-current="page"]{color:var(--pink-deep)}
 .tab[aria-current="page"] .ic{transform:translateY(-2px) scale(1.12); stroke-width:2.2}
 .tab[aria-current="page"]::after{opacity:1; transform:none}
-.fab{position:absolute; right:18px; bottom:86px; width:60px; height:60px; border-radius:50%;
+.fab{position:absolute; right:18px; bottom:calc(var(--tabbar-total) + 16px); width:60px; height:60px; border-radius:50%;
   background:linear-gradient(150deg,var(--yellow),var(--pink)); color:#fff; font-size:30px;
   font-weight:700; line-height:1; display:grid; place-items:center; box-shadow:var(--shadow-pop);
   transition:transform .2s var(--spring); z-index:20}
@@ -260,12 +264,14 @@ input{font:inherit;color:inherit}
   justify-content:center;gap:3px;font-family:var(--num);font-size:12.5px;font-weight:700;color:var(--ink-30);
   transition:background .2s ease}
 .day.has{color:var(--ink)}
-.day.sel{background:var(--ink);color:#FFF9F0}
-.day.today{box-shadow:inset 0 0 0 2px var(--blue)}
+.day.sel{background:#FFE3EC;color:var(--pink-cta);box-shadow:inset 0 0 0 2px var(--pink-deep)}
+.day.today{box-shadow:inset 0 0 0 2px var(--pink-deep)}
 .day .dots{display:flex;gap:2.5px;height:6px}
 .day .dots i{width:6px;height:6px;border-radius:50%}
-.legend{display:flex;flex-wrap:wrap;gap:9px 14px;padding:12px 4px 0}
-.legend div{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-60);font-weight:500}
+.legend{display:flex;flex-direction:column;gap:7px;padding:12px 4px 0}
+.legend .legrow{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--ink-60);font-weight:500}
+.legend .legrow b{color:var(--ink);font-weight:700;min-width:56px}
+.legend .legrow .dot{margin-left:5px}
 
 /* ---------- charts ---------- */
 .chartcard{position:relative}
@@ -302,7 +308,7 @@ input{font:inherit;color:inherit}
 
 /* ---------- feedback ---------- */
 .empty{text-align:center;padding:34px 20px;color:var(--ink-60);font-size:13px}
-.toast{position:absolute;left:50%;bottom:150px;transform:translate(-50%,14px);z-index:60;
+.toast{position:absolute;left:50%;bottom:calc(var(--tabbar-total) + 92px);transform:translate(-50%,14px);z-index:60;
   background:var(--ink);color:#FFF9F0;padding:12px 20px;border-radius:var(--r-pill);
   font-family:var(--display);font-weight:700;font-size:14.5px;box-shadow:var(--shadow-pop);
   opacity:0;pointer-events:none;transition:opacity .25s ease,transform .35s var(--spring)}
@@ -428,7 +434,8 @@ const SEED_FOODS = [
   {name:"滷雞腿便當",     unit:"個", kcal:750, protein:32, fat:30, carbs:85},
   {name:"烤地瓜",         unit:"條", kcal:130, protein:2,  fat:0,  carbs:30},
 ];
-const DEFAULTS = {kcalTarget:1730, proteinTarget:105, proteinPerMeal:32, name:"Esme"};
+/* 減脂期：tdee＝維持熱量，deficit＝每天想製造的赤字，兩者相減就是當日熱量上限 */
+const DEFAULTS = {tdee:1730, deficit:300, proteinTarget:105, proteinPerMeal:32, name:"Esme"};
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -450,11 +457,11 @@ function make(name, servings){
 /* 建立 28 天示範紀錄，讓月曆與趨勢一打開就有東西看 */
 function demoDays(){
   const B = [[["無糖豆漿",1],["溏心蛋",2]], [["希臘優格",1],["茶葉蛋",2]], [["無糖豆漿",1],["茶葉蛋",1]]];
-  const L = [[["健康便當（肉多）",1]], [["舒肥雞胸",1],["毛豆",1],["白飯",1]],
+  const L = [[["健康便當（肉多）",1]], [["舒肥雞胸",1],["毛豆",1],["烤地瓜",1]],
              [["健康便當（肉多）",1],["無糖豆漿",1]], [["滷雞腿便當",1]]];
-  const D = [[["舒肥雞胸",1],["板豆腐",1],["白飯",1]], [["健康便當（肉多）",1]],
-             [["板豆腐",1],["毛豆",1],["烤地瓜",1]]];
-  const S = [[["鶴茶樓拿鐵",1]], [["乳清蛋白",1]], []];
+  const D = [[["舒肥雞胸",1],["板豆腐",1],["毛豆",1]], [["健康便當（肉多）",1]],
+             [["板豆腐",1],["毛豆",1],["烤地瓜",1]], [["舒肥雞胸",1],["白飯",1]]];
+  const S = [[["乳清蛋白",1]], [["無糖豆漿",1]], [["乳清蛋白",1]], [["鶴茶樓拿鐵",1]]];
   const days = {};
   for(let i=27;i>=1;i--){
     const date = iso(addDays(new Date(), -i));
@@ -464,7 +471,7 @@ function demoDays(){
     const meals = {
       breakfast: pick(B).map(([n,s])=>make(n,s)),
       lunch:     pick(L).map(([n,s])=>make(n,s)),
-      dinner:    r() < 0.18 ? [] : pick(D).map(([n,s])=>make(n,s)),
+      dinner:    r() < 0.10 ? [] : pick(D).map(([n,s])=>make(n,s)),
       snack:     pick(S).map(([n,s])=>make(n,s)),
     };
     days[date] = {date, meals};
@@ -481,8 +488,18 @@ function seedState(){
     days: {},
   };
 }
+/* 舊資料只有 kcalTarget（增肌期的每日目標），轉成 TDEE 再套上預設赤字 */
+function migrate(s){
+  s.settings = {...DEFAULTS, ...(s.settings || {})};
+  if(s.settings.kcalTarget != null){
+    s.settings.tdee = s.settings.kcalTarget;
+    delete s.settings.kcalTarget;
+  }
+}
+
 let S;
 try{ S = JSON.parse(localStorage.getItem(KEY)) || seedState(); }catch(e){ S = seedState(); }
+migrate(S);
 if(!S.days[iso(new Date())]) S.days[iso(new Date())] = {date:iso(new Date()), meals:{breakfast:[],lunch:[],dinner:[],snack:[]}};
 const save = () => { try{ localStorage.setItem(KEY, JSON.stringify(S)); }catch(e){} };
 
@@ -495,13 +512,18 @@ const sumEntries = list => list.reduce((a,e)=>({
 const dayOf = d => S.days[d] || {date:d, meals:{breakfast:[],lunch:[],dinner:[],snack:[]}};
 const totalsOf = d => sumEntries(MEALS.flatMap(m => dayOf(d).meals[m.id] || []));
 const hasLog = d => !!S.days[d] && MEALS.some(m => (S.days[d].meals[m.id]||[]).length);
-const kcalHit = t => t.kcal >= S.settings.kcalTarget*0.9;      // 增肌期：吃不夠才是問題
+/* 減脂期：吃超過上限才是問題。上限＝TDEE − 每日赤字 */
+const kcalLimit = () => Math.max(600, S.settings.tdee - S.settings.deficit);
+const deficitOf = t => S.settings.tdee - t.kcal;               // 正數＝赤字，負數＝盈餘
+const kcalHit = t => t.kcal <= kcalLimit();
 const proHit  = t => t.protein >= S.settings.proteinTarget;
+const dayHit  = t => kcalHit(t) && proHit(t);                  // 雙達標＝赤字有做到＋蛋白質吃夠
+const tooLow  = t => t.kcal < kcalLimit()*0.7;                 // 赤字開太大的提醒線
 
 /* ============================ 畫面 ============================ */
 const $ = s => document.querySelector(s);
 const view = $("#view");
-let tab = "today", selDate = iso(new Date()), calMonth = new Date(), trendRange = 7, lastProHit = proHit(totalsOf(iso(new Date())));
+let tab = "today", selDate = iso(new Date()), calMonth = new Date(), trendRange = 7, lastHit = dayHit(totalsOf(iso(new Date())));
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const r0 = n => Math.round(n);
@@ -513,7 +535,7 @@ function render(){
   openRow = null; drag = null;
   view.innerHTML = ({today:viewToday, history:viewHistory, trends:viewTrends, settings:viewSettings})[tab]();
   view.firstElementChild && view.firstElementChild.classList.add("fade");
-  if(tab==="today") paintRings();
+  if(tab==="today") paintBars();
   if(tab==="trends") drawCharts();
   view.scrollTop = 0;
 }
@@ -521,11 +543,16 @@ function render(){
 /* ---------------- 今天 ---------------- */
 function viewToday(){
   const t = totalsOf(iso(new Date()));
-  const { kcalTarget, proteinTarget } = S.settings;
-  const left = proteinTarget - t.protein;
+  const { proteinTarget } = S.settings;
+  const limit = kcalLimit(), def = deficitOf(t);
+  const left = proteinTarget - t.protein;   // 還差多少蛋白質
+  const room = limit - t.kcal;              // 還剩多少熱量額度
   let cls = "", msg;
-  if(left <= 0){ cls="done"; msg = "蛋白質達標了"; }
-  else { msg = `還差 <b>${r0(left)} g</b> 蛋白質`; }
+  if(room < 0){ cls="over"; msg = `超過上限 <b>${r0(-room)} kcal</b>，今天的赤字沒了`; }
+  else if(new Date().getHours() >= 20 && tooLow(t)){
+    cls="warn"; msg = `今天只吃 <b>${r0(t.kcal)} kcal</b>，赤字開太大反而會掉肌肉`; }
+  else if(left > 0){ msg = `還差 <b>${r0(left)} g</b> 蛋白質・還能吃 <b>${r0(room)} kcal</b>，目前赤字 <b>${r0(def)} kcal</b>`; }
+  else { cls="done"; msg = `蛋白質達標了・目前赤字 <b>${r0(def)} kcal</b>，還能吃 <b>${r0(room)} kcal</b>`; }
 
   const todayLog = MEALS.flatMap(m => dayOf(iso(new Date())).meals[m.id] || []);
   const logRows = todayLog.length
@@ -545,52 +572,53 @@ function viewToday(){
     : `<div class="card"><div class="empty">還沒有紀錄，按右下角 ＋ 開始</div></div>`;
 
   return `<div class="stack">
-    <div class="card ringcard">
-      <div class="ringrow">
-        <div class="hero-cat" role="img" aria-label="小貓在吃飯"></div>
-        <div class="ringwrap">
-          <svg class="rings" viewBox="0 0 200 200" aria-hidden="true">
-            <circle class="track" cx="100" cy="100" r="86" stroke-width="15"></circle>
-            <circle class="track" cx="100" cy="100" r="64" stroke-width="15"></circle>
-            <circle class="bar" id="kcalBar" cx="100" cy="100" r="86" stroke-width="15" stroke="var(--yellow)"></circle>
-            <circle class="bar" id="proBar"  cx="100" cy="100" r="64" stroke-width="15" stroke="var(--pink)"></circle>
-          </svg>
-          <div class="ringcenter">
-            <div class="big" id="kcalNum">0</div>
-            <div class="big-sub">／${kcalTarget} kcal</div>
+    <div class="card barcard">
+      <div class="bars">
+        <div>
+          <div class="bar-head">
+            <span class="bar-label"><i class="dot" style="background:var(--pink)"></i>蛋白質</span>
+            <span class="bar-val"><b id="proNum" style="color:${proHit(t)?"var(--mint-deep)":"var(--pink-deep)"}">0</b><span> / ${proteinTarget} g</span></span>
+          </div>
+          <div class="bar-track" role="progressbar" aria-label="蛋白質進度"
+            aria-valuemin="0" aria-valuemax="${proteinTarget}" aria-valuenow="${r0(t.protein)}"
+            aria-valuetext="蛋白質 ${r0(t.protein)} g，目標 ${proteinTarget} g">
+            <i class="bar-fill" id="proFill"></i>
+          </div>
+        </div>
+        <div>
+          <div class="bar-head">
+            <span class="bar-label"><i class="dot" style="background:var(--yellow)"></i>熱量</span>
+            <span class="bar-val"><b id="kcalNum" style="color:${kcalHit(t)?"var(--ink)":"var(--peach-deep)"}">0</b><span> / ${limit} kcal</span></span>
+          </div>
+          <div class="bar-track" role="progressbar" aria-label="熱量進度"
+            aria-valuemin="0" aria-valuemax="${limit}" aria-valuenow="${r0(t.kcal)}"
+            aria-valuetext="熱量 ${r0(t.kcal)} kcal，上限 ${limit} kcal">
+            <i class="bar-fill" id="kcalFill"></i>
           </div>
         </div>
       </div>
-      <div class="chips">
-        <div class="chip"><i class="dot" style="background:var(--yellow)"></i>
-          <span>熱量</span><b>${r0(t.kcal)}<span style="font-weight:600"> / ${kcalTarget}</span></b></div>
-        <div class="chip"><i class="dot" style="background:var(--pink)"></i>
-          <span>蛋白質</span><b>${r0(t.protein)}<span style="font-weight:600"> / ${proteinTarget} g</span></b></div>
-      </div>
       <div class="status ${cls}">${msg}</div>
     </div>
-    <div class="sec-title">今天吃了什麼${todayLog.length?`<span class="sec-hint">點一下編輯・向右滑刪除</span>`:""}</div>
+    <div class="sec-title">今天吃了什麼</div>
     ${logRows}
-    <div class="card note">
-      <p><b class="note-t">每餐目標 ${S.settings.proteinPerMeal} g 蛋白質</b>
-      平均分配到三餐，比集中在一餐更有利肌肉合成。</p>
-    </div>
+    <div class="hero-cat" role="img" aria-label="小貓在吃飯"></div>
   </div>`;
 }
-function paintRings(){
+function paintBars(){
   const t = totalsOf(iso(new Date()));
-  const set = (el, r, ratio, color) => {
-    const C = 2*Math.PI*r;
-    el.style.strokeDasharray = C;
-    el.style.strokeDashoffset = C;
-    el.style.stroke = color;
+  const limit = kcalLimit(), target = S.settings.proteinTarget;
+  const set = (fill, ratio, color, over) => {
+    fill.style.width = "0%";
+    fill.style.backgroundColor = color;
+    fill.classList.toggle("over", !!over);
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      el.style.strokeDashoffset = C*(1-Math.min(ratio,1));
+      fill.style.width = Math.min(ratio,1)*100 + "%";
     }));
   };
-  const pr = t.protein/S.settings.proteinTarget;
-  set($("#kcalBar"), 86, t.kcal/S.settings.kcalTarget, t.kcal>S.settings.kcalTarget*1.1?"var(--peach)":"var(--yellow)");
-  set($("#proBar"),  64, pr, pr>=1 ? "var(--mint)" : "var(--pink)");
+  const pr = t.protein/target, kr = t.kcal/limit;
+  set($("#proFill"),  pr, pr>=1 ? "var(--mint)" : "var(--pink)", false);
+  set($("#kcalFill"), kr, kr>1  ? "var(--peach)" : "var(--yellow)", kr>1);
+  tween($("#proNum"),  t.protein);
   tween($("#kcalNum"), t.kcal);
 }
 function tween(el, to){
@@ -614,12 +642,9 @@ function viewHistory(){
     const ds = iso(new Date(y,m,d));
     const has = hasLog(ds), t = totalsOf(ds);
     let dots = "";
-    if(has){
-      const k = kcalHit(t), p = proHit(t);
-      if(k && p) dots = '<i style="background:var(--mint)"></i>';
-      else if(p)  dots = '<i style="background:var(--pink)"></i>';
-      else if(k)  dots = '<i style="background:var(--yellow)"></i>';
-      else        dots = '<i style="background:var(--ink-30)"></i>';
+    if(has){   // 左點＝熱量赤字，右點＝蛋白質，兩個目標同時看得到
+      dots = `<i style="background:${kcalHit(t)?"var(--mint)":"var(--peach)"}"></i>`
+           + `<i style="background:${proHit(t)?"var(--pink-deep)":"var(--ink-30)"}"></i>`;
     }
     cells.push(`<button class="day ${has?"has":""} ${ds===selDate?"sel":""} ${ds===todayIso?"today":""}"
       data-day="${ds}" aria-label="${ds}">${d}<span class="dots">${dots}</span></button>`);
@@ -627,6 +652,8 @@ function viewHistory(){
   const nextDisabled = (y>new Date().getFullYear()) || (y===new Date().getFullYear() && m>=new Date().getMonth());
 
   const t = totalsOf(selDate);
+  const limit = kcalLimit(), def = deficitOf(t);
+  const { proteinTarget } = S.settings;
   const dayLog = MEALS.flatMap(mm => dayOf(selDate).meals[mm.id] || []);
   const detail = dayLog.length
     ? `<div class="card logcard">${dayLog.map(e=>`<div class="logrow">
@@ -647,17 +674,23 @@ function viewHistory(){
       <div class="dow">${["日","一","二","三","四","五","六"].map(x=>`<span>${x}</span>`).join("")}</div>
       <div class="cal">${cells.join("")}</div>
       <div class="legend">
-        <div><i class="dot" style="background:var(--mint)"></i>兩項都達標</div>
-        <div><i class="dot" style="background:var(--pink)"></i>蛋白質達標</div>
-        <div><i class="dot" style="background:var(--yellow)"></i>熱量達標</div>
-        <div><i class="dot" style="background:var(--ink-30)"></i>有記錄</div>
+        <div class="legrow"><b>左・熱量</b>
+          <i class="dot" style="background:var(--mint)"></i>有赤字（≤ ${limit}）
+          <i class="dot" style="background:var(--peach)"></i>超過上限</div>
+        <div class="legrow"><b>右・蛋白質</b>
+          <i class="dot" style="background:var(--pink-deep)"></i>達標（≥ ${proteinTarget} g）
+          <i class="dot" style="background:var(--ink-30)"></i>不足</div>
       </div>
     </div>
-    <div class="sec-title">${m+1} 月 ${dObj.getDate()} 日${selDate===iso(new Date())?"（今天）":""}</div>
+    <div class="sec-title">${dObj.getMonth()+1} 月 ${dObj.getDate()} 日${selDate===iso(new Date())?"（今天）":""}${
+      hasLog(selDate) && dayHit(t) ? `<span class="sec-hint">雙達標 🎉</span>` : ""}</div>
     ${hasLog(selDate) ? `<div class="card statrow" style="padding:12px">
-      <div class="stat"><b>${r0(t.kcal)}</b><span>熱量 kcal</span></div>
-      <div class="stat"><b style="color:var(--pink-deep)">${r0(t.protein)}</b><span>蛋白質 g</span></div>
-      <div class="stat"><b>${r0(t.carbs)}</b><span>碳水 g</span></div>
+      <div class="stat"><b style="color:${kcalHit(t)?"var(--ink)":"var(--peach-deep)"}">${r0(t.kcal)}</b>
+        <span>熱量／上限 ${limit}</span></div>
+      <div class="stat"><b style="color:${proHit(t)?"var(--pink-deep)":"var(--ink-30)"}">${r0(t.protein)}</b>
+        <span>蛋白質／目標 ${proteinTarget}</span></div>
+      <div class="stat"><b style="color:${kcalHit(t)?"var(--mint-deep)":"var(--peach-deep)"}">${def>=0?"−":"+"}${r0(Math.abs(def))}</b>
+        <span>${def>=0?"赤字":"盈餘"} kcal</span></div>
     </div>` : ""}
     ${detail}
   </div>`;
@@ -668,9 +701,10 @@ function viewTrends(){
   const n = trendRange;
   const dates = Array.from({length:n}, (_,i)=>iso(addDays(new Date(), -(n-1-i))));
   const logged = dates.filter(hasLog);
-  const avgK = logged.length ? logged.reduce((a,d)=>a+totalsOf(d).kcal,0)/logged.length : 0;
+  const avgD = logged.length ? logged.reduce((a,d)=>a+deficitOf(totalsOf(d)),0)/logged.length : 0;
   const avgP = logged.length ? logged.reduce((a,d)=>a+totalsOf(d).protein,0)/logged.length : 0;
-  const hitP = dates.filter(d=>hasLog(d) && proHit(totalsOf(d))).length;
+  const hitBoth = dates.filter(d=>hasLog(d) && dayHit(totalsOf(d))).length;
+  const limit = kcalLimit();
 
   return `<div class="stack">
     <div class="segrow">
@@ -678,23 +712,25 @@ function viewTrends(){
       <button class="seg" data-range="30" aria-pressed="${n===30}">近 30 天</button>
     </div>
     <div class="card statrow">
-      <div class="stat"><b>${r0(avgK)}</b><span>平均熱量</span></div>
+      <div class="stat"><b style="color:${avgD>=S.settings.deficit?"var(--mint-deep)":"var(--peach-deep)"}">${avgD>=0?"−":"+"}${r0(Math.abs(avgD))}</b>
+        <span>平均${avgD>=0?"赤字":"盈餘"} kcal</span></div>
       <div class="stat"><b style="color:var(--pink-deep)">${r0(avgP)}</b><span>平均蛋白 g</span></div>
-      <div class="stat"><b style="color:var(--mint-deep)">${hitP}<span style="font-size:13px;color:var(--ink-30)">/${n}</span></b><span>蛋白達標天</span></div>
+      <div class="stat"><b style="color:var(--mint-deep)">${hitBoth}<span style="font-size:13px;color:var(--ink-30)">/${n}</span></b><span>雙達標天</span></div>
     </div>
     <div class="card chartcard">
-      <div class="chart-h"><b>熱量</b><span>虛線 = 目標 ${S.settings.kcalTarget} kcal</span></div>
+      <div class="chart-h"><b>熱量</b><span>虛線 = 上限 ${limit} kcal・壓在線下</span></div>
       <div class="chartbox"><svg class="chart" id="chartK" viewBox="0 0 320 118"></svg>
       <div class="charttip" id="tipK"></div></div>
     </div>
     <div class="card chartcard">
-      <div class="chart-h"><b>蛋白質</b><span>虛線 = 目標 ${S.settings.proteinTarget} g</span></div>
+      <div class="chart-h"><b>蛋白質</b><span>虛線 = 目標 ${S.settings.proteinTarget} g・踩在線上</span></div>
       <div class="chartbox"><svg class="chart" id="chartP" viewBox="0 0 320 118"></svg>
       <div class="charttip" id="tipP"></div></div>
     </div>
     <div class="card note">
       <p><b class="note-t">怎麼看這兩張圖</b>
-      單日吃多吃少都正常，看的是<b>線有沒有大致貼著虛線走</b>。沒記錄的日子線會斷開。</p>
+      熱量要<b>壓在虛線以下</b>、蛋白質要<b>踩在虛線以上</b>，這樣才是有赤字又留得住肌肉。
+      單日超標不用緊張，看的是一週的平均。沒記錄的日子線會斷開。</p>
     </div>
   </div>`;
 }
@@ -704,7 +740,7 @@ function drawCharts(){
   const dates = Array.from({length:n}, (_,i)=>iso(addDays(new Date(), -(n-1-i))));
   const kv = dates.map(d => hasLog(d) ? totalsOf(d).kcal : null);
   const pv = dates.map(d => hasLog(d) ? totalsOf(d).protein : null);
-  chart($("#chartK"), $("#tipK"), dates, kv, S.settings.kcalTarget, "var(--yellow-deep)", "kcal");
+  chart($("#chartK"), $("#tipK"), dates, kv, kcalLimit(), "var(--yellow-deep)", "kcal");
   chart($("#chartP"), $("#tipP"), dates, pv, S.settings.proteinTarget, "var(--pink-deep)", "g");
 }
 
@@ -776,9 +812,14 @@ function viewSettings(){
   return `<div class="stack">
     <div class="sec-title">我的目標</div>
     <div class="card" style="padding:6px 16px">
-      <div class="row"><div class="rl">每日熱量<small>TDEE 輕度活動・增肌期不做赤字</small></div>
-        <div class="numfield"><input type="number" data-set="kcalTarget" value="${S.settings.kcalTarget}"><span>kcal</span></div></div>
-      <div class="row"><div class="rl">每日蛋白質<small>約 2.0 g／kg 體重</small></div>
+      <div class="row"><div class="rl">維持熱量 TDEE<small>不胖不瘦的每日熱量</small></div>
+        <div class="numfield"><input type="number" data-set="tdee" value="${S.settings.tdee}"><span>kcal</span></div></div>
+      <div class="row"><div class="rl">每日赤字<small>300–500 kcal 大約每週掉 0.3–0.5 kg</small></div>
+        <div class="numfield"><input type="number" data-set="deficit" value="${S.settings.deficit}"><span>kcal</span></div></div>
+      <div class="row"><div class="rl">每日熱量上限<small>TDEE − 赤字・吃在這以內才算達標</small></div>
+        <div class="numfield" style="background:none">
+          <b id="limitOut" style="font-family:var(--num);font-size:16px;font-weight:800">${kcalLimit()}</b><span>kcal</span></div></div>
+      <div class="row"><div class="rl">每日蛋白質<small>減脂期建議 1.6–2.2 g／kg 體重</small></div>
         <div class="numfield"><input type="number" data-set="proteinTarget" value="${S.settings.proteinTarget}"><span>g</span></div></div>
       <div class="row"><div class="rl">每餐蛋白質<small>平均分配比集中一餐更好</small></div>
         <div class="numfield"><input type="number" data-set="proteinPerMeal" value="${S.settings.proteinPerMeal}"><span>g</span></div></div>
@@ -864,6 +905,9 @@ function renderSheet(capture = true){
   if(capture) captureDraft();
   const list = MEALS.flatMap(x => dayOf(iso(new Date())).meals[x.id] || []);
   const s = sumEntries(list);
+  const room = kcalLimit() - s.kcal, needP = S.settings.proteinTarget - s.protein;
+  const headSum = (room >= 0 ? `還能吃 ${r0(room)} kcal` : `已超出上限 ${r0(-room)} kcal`)
+    + `・蛋白質${needP > 0 ? `還差 ${r0(needP)} g` : `已達標`}`;
   const favs = S.favorites.slice().sort((a,b)=>b.useCount-a.useCount);
   const v = k => esc(draft[k] == null ? "" : draft[k]);
   const meal = MEALS.find(m => m.id === sheetMeal) || MEALS[0];
@@ -872,8 +916,7 @@ function renderSheet(capture = true){
     <div class="grab"></div>
     <div class="sheet-head">
       <div>${sheetMode==="edit" ? `<div class="sheet-title">編輯紀錄</div>` : ""}
-        <div style="font-size:11.5px;color:var(--ink-60)">
-          目前 ${r0(s.kcal)} kcal・蛋白 ${r0(s.protein)} g／今日目標 ${S.settings.proteinTarget} g</div></div>
+        <div style="font-size:11.5px;color:var(--ink-60)">${headSum}</div></div>
       <button class="x" id="closeSheet" aria-label="關閉">✕</button>
     </div>`;
 
@@ -953,18 +996,18 @@ function addEntry(food, servings){
     unit:food.unit||"份", servings, kcal:food.kcal, protein:food.protein,
     fat:food.fat||0, carbs:food.carbs||0});
   save();
-  const hit = celebrateIfHit();       // 剛好達標才會撒星星
+  const hit = celebrateIfHit();       // 剛好雙達標才會撒星星
   closeSheet();                       // 紀錄完直接收起面板
   showRecorded(food, servings, hit);  // 用提示 modal 告訴使用者已紀錄
   if(tab==="today") render();
 }
 
-/* 回傳「這一筆剛好讓蛋白質達標」，讓提示 modal 一起說 */
+/* 回傳「這一筆剛好讓今天雙達標（有赤字＋蛋白質夠）」，讓提示 modal 一起說 */
 function celebrateIfHit(){
-  const now = proHit(totalsOf(iso(new Date())));
-  const justHit = now && !lastProHit;
+  const now = dayHit(totalsOf(iso(new Date())));
+  const justHit = now && !lastHit;
   if(justHit) stars();
-  lastProHit = now;
+  lastHit = now;
   return justHit;
 }
 
@@ -974,10 +1017,12 @@ function showRecorded(food, servings, justHit){
   const t = totalsOf(iso(new Date()));
   $("#doneFood").innerHTML =
     `${esc(food.name)}${servings!==1?` ×${servings}`:""}　<b>${r0(food.kcal*servings)} kcal・蛋白 ${r0(food.protein*servings)} g</b>`;
+  const room = kcalLimit() - t.kcal;
   $("#doneSum").innerHTML =
-    `今日累計 ${r0(t.kcal)} / ${S.settings.kcalTarget} kcal<br>`
+    `今日累計 ${r0(t.kcal)} / 上限 ${kcalLimit()} kcal`
+    + `（${room>=0 ? `還能吃 ${r0(room)}` : `超出 ${r0(-room)}`} kcal）<br>`
     + `蛋白質 ${r0(t.protein)} / ${S.settings.proteinTarget} g`
-    + (justHit ? `<div class="donehit">蛋白質達標了 🎉</div>` : "");
+    + (justHit ? `<div class="donehit">赤字＋蛋白質都達標 🎉</div>` : "");
   $("#doneModal").classList.add("open");
   clearTimeout(doneTimer);
   doneTimer = setTimeout(closeDone, justHit ? 3200 : 2200);
@@ -1043,7 +1088,7 @@ function deleteEntry(id){
 }
 function afterChange(d){
   save();
-  lastProHit = proHit(totalsOf(d));
+  lastHit = dayHit(totalsOf(d));
   renderSheet();
   if(tab === "today") render();
 }
@@ -1173,14 +1218,19 @@ document.addEventListener("click", ev => {
     navigator.clipboard.writeText(text).then(()=>toast("已複製到剪貼簿"), ()=>toast("複製失敗，請手動選取"));
     return;
   }
-  if(hit("#reset"))             { if(!confirm("要清空所有紀錄嗎？這個動作沒辦法復原。")) return; S = seedState(); save(); lastProHit = false; render(); toast("已清空所有紀錄"); return; }
+  if(hit("#reset"))             { if(!confirm("要清空所有紀錄嗎？這個動作沒辦法復原。")) return; S = seedState(); save(); lastHit = false; render(); toast("已清空所有紀錄"); return; }
 });
 
 document.addEventListener("change", ev => {
   const el = ev.target.closest("[data-set]");
   if(!el) return;
   const v = parseFloat(el.value);
-  if(!isNaN(v) && v>0){ S.settings[el.dataset.set] = v; save(); }
+  if(isNaN(v) || v<=0) return;
+  S.settings[el.dataset.set] = v;
+  save();
+  lastHit = dayHit(totalsOf(iso(new Date())));
+  const out = $("#limitOut");            // 上限是推算的，改 TDEE／赤字要跟著更新
+  if(out) out.textContent = kcalLimit();
 });
 document.addEventListener("input", ev => {
   if(sheetMode !== "edit" || !ev.target.closest(".sheet")) return;
