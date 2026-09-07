@@ -13,7 +13,7 @@
 <meta name="application-name" content="飯盆">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
-<!-- build: 92008a86b9 -->
+<!-- build: 90a4fb326f -->
 <meta charset="utf-8">
 <title>飯盆</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -32,7 +32,8 @@
   --cream:#FFF9F0;   --card:#FFFFFF;   --sunk:#FDF3E7;
   --ink:#3D3A4E;     --ink-60:#8B879B; --ink-30:#C9C5D4;
   --line:#F1EADF;
-  --pink-cta:#D6337A;
+  --pink-cta:#D6337A;  --pink-cta-lite:#DE4B8B;
+  --red:#F58A93;     --red-deep:#D64550;
   --shadow-soft:0 4px 14px rgba(61,58,78,.07);
   --shadow-pop:0 8px 22px rgba(255,143,177,.22);
   --r-card:20px; --r-pill:999px; --r-field:16px;
@@ -117,8 +118,6 @@ input{font:inherit;color:inherit}
   background:var(--card); border-radius:50%; box-shadow:var(--shadow-soft)}
 .cat-bubble::after{width:10px; height:10px; bottom:-7px; margin-left:-16px}
 .cat-bubble::before{width:6px; height:6px; bottom:-16px; margin-left:-4px}
-.cat-bubble .bubble-hint{display:block; margin-top:5px; font-size:10.5px;
-  font-weight:600; color:var(--ink-30); letter-spacing:.3px}
 @keyframes bubblepop{
   0%{opacity:0; transform:translateY(6px) scale(.9)}
   100%{opacity:1; transform:translateY(0) scale(1)}
@@ -137,7 +136,7 @@ input{font:inherit;color:inherit}
   white-space:nowrap; line-height:1}
 .bar-val b{font-size:21px; font-weight:800; letter-spacing:-.4px}
 .bar-val span{font-size:12px; font-weight:600; color:var(--ink-60)}
-.bar-track{position:relative; height:14px; border-radius:var(--r-pill);
+.bar-track{position:relative; height:7px; border-radius:var(--r-pill);
   background:var(--sunk); overflow:hidden}
 .bar-fill{position:absolute; left:0; top:0; bottom:0; width:0;
   border-radius:var(--r-pill); background:var(--ink-30);
@@ -152,6 +151,15 @@ input{font:inherit;color:inherit}
 .status.done{color:var(--mint-deep); font-weight:700}
 .status.over{color:var(--peach-deep); font-weight:700}
 .status.warn{color:var(--lilac-deep); font-weight:700}
+/* 首頁「還差…」那句話改成三張數字卡：數字在上、文字在下（同紀錄頁的 .stat） */
+.todaystats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:2px 0 20px}
+.tstat{background:none; border:0; border-radius:0;
+  padding:2px 4px; text-align:center}
+.tstat b{display:block; font-family:var(--num); font-size:19px; font-weight:800;
+  letter-spacing:-.4px; line-height:1.2; font-variant-numeric:tabular-nums}
+.tstat b.word{font-family:var(--body); font-size:15px}
+.tstat span{display:block; margin-top:3px; font-size:10.5px; color:var(--ink-60); font-weight:400}
+.bars+.status{margin-top:14px; padding:6px 6px 0; text-align:center; font-size:12.5px}
 
 /* ---------- note ---------- */
 .note{display:flex; gap:12px; align-items:flex-start; padding:15px 16px}
@@ -244,6 +252,16 @@ input{font:inherit;color:inherit}
 .seg{flex:1; padding:8px 4px; border-radius:var(--r-pill); font-size:13px; font-weight:700;
   color:var(--ink-60); transition:background .2s ease, color .2s ease}
 .seg[aria-pressed="true"]{background:#fff; color:var(--ink); box-shadow:var(--shadow-soft)}
+
+/* ---------- 補記日期 ---------- */
+.datebar{display:flex; flex-direction:column; gap:8px}
+.segdate{position:relative; overflow:hidden; display:flex; align-items:center;
+  justify-content:center; text-align:center; cursor:pointer}
+.segdate input{position:absolute; inset:0; width:100%; height:100%;
+  opacity:0; padding:0; border:0; background:none; cursor:pointer}
+.datenote{font-size:11.5px; color:var(--ink-60); text-align:center; line-height:1.5}
+.datenote b{color:var(--pink-deep); font-weight:800}
+.addday{color:var(--ink-60)}
 .block{background:#fff; border-radius:var(--r-card); padding:14px; box-shadow:var(--shadow-soft);
   display:flex; flex-direction:column; gap:10px}
 .block-h{display:flex; align-items:baseline; justify-content:space-between; gap:8px}
@@ -277,8 +295,10 @@ input{font:inherit;color:inherit}
 .btn{border-radius:var(--r-pill); padding:14px; font-family:var(--display); font-weight:700;
   font-size:15px; text-align:center; transition:transform .16s var(--spring)}
 .btn:active{transform:scale(.96)}
-.btn-main{background:var(--pink-cta); color:#fff; box-shadow:var(--shadow-pop)}
+.btn-main{background:var(--pink-cta-lite); color:#fff; box-shadow:var(--shadow-pop)}
 .btn-soft{background:var(--sunk); color:var(--ink)}
+.btn-danger{background:var(--card); color:var(--red-deep);
+  border:2px solid var(--red-deep); padding:12px}
 .sheet-title{font-family:var(--display); font-size:15px; font-weight:800; margin-bottom:2px}
 .editsum{font-size:12px; color:var(--ink-60); text-align:center; font-variant-numeric:tabular-nums}
 .editsum b{font-family:var(--num); color:var(--ink); font-weight:800}
@@ -472,6 +492,22 @@ const uid = () => Math.random().toString(36).slice(2,9);
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 const fromIso = s => {const [y,m,d]=s.split("-").map(Number); return new Date(y,m-1,d);};
 const addDays = (d,n) => {const x=new Date(d); x.setDate(x.getDate()+n); return x;};
+const today = () => iso(new Date());
+const WEEK = "日一二三四五六";
+/* 補記用的日期說法：三天內講「今天、昨天、前天」，再遠就寫日期 */
+function dayLabel(d){
+  const diff = Math.round((fromIso(d) - fromIso(today())) / 86400000);
+  if(diff === 0)  return "今天";
+  if(diff === -1) return "昨天";
+  if(diff === -2) return "前天";
+  const x = fromIso(d);
+  return `${x.getMonth()+1} 月 ${x.getDate()} 日（${WEEK[x.getDay()]}）`;
+}
+const shortDate = d => {const x = fromIso(d); return `${x.getMonth()+1}/${x.getDate()}`;};
+/* 日期開頭的標籤接在中文後面要留一格，「昨天」這種就不用 */
+const sp = s => /^\d/.test(s) ? " " + s : s;
+/* 位子小的地方（按鈕、標頭）用短的：昨天／前天／9/4 */
+const dayTag = d => {const l = dayLabel(d); return /^\d/.test(l) ? " " + shortDate(d) : l;};
 
 /* 種子亂數：讓示範資料每次載入都一樣 */
 function rng(seed){let h=1779033703^seed.length;
@@ -724,7 +760,7 @@ function catBubbleHtml(){
 function paintCatBubble(){
   const b = $("#catBubble");
   if(!b) return;
-  b.innerHTML = catBubbleHtml() + `<span class="bubble-hint">點我換一句</span>`;
+  b.innerHTML = catBubbleHtml();
   b.style.animation = "none"; void b.offsetWidth; b.style.animation = "";
 }
 
@@ -735,16 +771,32 @@ function viewToday(){
   const limit = kcalLimit(), def = deficitOf(t);
   const left = proteinTarget - t.protein;   // 還差多少蛋白質
   const room = limit - t.kcal;              // 還剩多少熱量額度
-  let cls = "", msg;
-  if(room < 0){ cls="over"; msg = `超過上限 <b>${r0(-room)} kcal</b>，今天的赤字沒了`; }
+  /* 三張數字卡：蛋白質還差／還能吃／赤字。數字在上、說明在下。
+     配色只當訊號：預設 ink，達標才轉 mint-deep、超標／盈餘才轉 peach-deep */
+  const stats = `<div class="todaystats">
+    <div class="tstat">
+      <b class="${left>0?"":"word"}" style="color:${left>0?"var(--ink)":"var(--mint-deep)"}">${left>0?r0(left):"達標"}</b>
+      <span>${left>0?"還差蛋白質 g":"蛋白質"}</span>
+    </div>
+    <div class="tstat">
+      <b style="color:${room>=0?"var(--ink)":"var(--peach-deep)"}">${r0(Math.abs(room))}</b>
+      <span>${room>=0?"還能吃 kcal":"超過上限 kcal"}</span>
+    </div>
+    <div class="tstat">
+      <b style="color:${def>=0?"var(--ink)":"var(--peach-deep)"}">${def>=0?"−":"+"}${r0(Math.abs(def))}</b>
+      <span>${def>=0?"赤字 kcal":"盈餘 kcal"}</span>
+    </div>
+  </div>`;
+  /* 只有需要提醒時才多一行字，其他情況數字自己會說話 */
+  let hint = "";
+  if(room < 0){ hint = `<div class="status over">今天的赤字沒了</div>`; }
   else if(new Date().getHours() >= 20 && tooLow(t)){
-    cls="warn"; msg = `今天只吃 <b>${r0(t.kcal)} kcal</b>，赤字開太大反而會掉肌肉`; }
-  else if(left > 0){ msg = `還差 <b>${r0(left)} g</b> 蛋白質・還能吃 <b>${r0(room)} kcal</b>，目前赤字 <b>${r0(def)} kcal</b>`; }
-  else { cls="done"; msg = `蛋白質達標了・目前赤字 <b>${r0(def)} kcal</b>，還能吃 <b>${r0(room)} kcal</b>`; }
+    hint = `<div class="status warn">今天只吃 <b>${r0(t.kcal)} kcal</b>，赤字開太大反而會掉肌肉</div>`; }
+  else if(left <= 0){ hint = `<div class="status done">蛋白質達標了，繼續保持</div>`; }
 
   const todayLog = MEALS.flatMap(m => dayOf(iso(new Date())).meals[m.id] || []);
   const logRows = todayLog.length
-    ? `<div class="card logcard">${todayLog.map(e=>`<div class="swipe" data-entry="${e.id}">
+    ? `<div class="card logcard">${todayLog.map(e=>`<div class="swipe" data-entry="${e.id}" data-date="${today()}">
         <div class="swipe-bg">
           <button class="swipe-del" data-swipedel="${e.id}" aria-label="刪除 ${esc(e.name)}">
             <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l1 13h9l1-13"/><path d="M10.5 11v6M13.5 11v6"/></svg>刪除</button>
@@ -761,11 +813,12 @@ function viewToday(){
 
   return `<div class="stack">
     <div class="card barcard">
+      ${stats}
       <div class="bars">
         <div>
           <div class="bar-head">
             <span class="bar-label"><i class="dot" style="background:var(--pink)"></i>蛋白質</span>
-            <span class="bar-val"><b id="proNum" style="color:${proHit(t)?"var(--mint-deep)":"var(--pink-deep)"}">0</b><span> / ${proteinTarget} g</span></span>
+            <span class="bar-val"><b id="proNum" style="color:${proHit(t)?"var(--mint-deep)":"var(--ink)"}">0</b><span> / ${proteinTarget} g</span></span>
           </div>
           <div class="bar-track" role="progressbar" aria-label="蛋白質進度"
             aria-valuemin="0" aria-valuemax="${proteinTarget}" aria-valuenow="${r0(t.protein)}"
@@ -785,7 +838,7 @@ function viewToday(){
           </div>
         </div>
       </div>
-      <div class="status ${cls}">${msg}</div>
+      ${hint}
     </div>
     <div class="sec-title">今天吃了什麼</div>
     ${logRows}
@@ -835,8 +888,8 @@ function viewHistory(){
     const has = hasLog(ds), t = totalsOf(ds);
     let dots = "";
     if(has){   // 左點＝熱量赤字，右點＝蛋白質，兩個目標同時看得到
-      dots = `<i style="background:${kcalHit(t)?"var(--mint)":"var(--peach)"}"></i>`
-           + `<i style="background:${proHit(t)?"var(--pink-deep)":"var(--ink-30)"}"></i>`;
+      dots = `<i style="background:${kcalHit(t)?"var(--mint-deep)":"var(--ink-30)"}"></i>`
+           + `<i style="background:${proHit(t)?"var(--mint-deep)":"var(--ink-30)"}"></i>`;
     }
     cells.push(`<button class="day ${has?"has":""} ${ds===selDate?"sel":""} ${ds===todayIso?"today":""}"
       data-day="${ds}" aria-label="${ds}">${d}<span class="dots">${dots}</span></button>`);
@@ -847,13 +900,24 @@ function viewHistory(){
   const limit = kcalLimit(), def = deficitOf(t);
   const { proteinTarget } = S.settings;
   const dayLog = MEALS.flatMap(mm => dayOf(selDate).meals[mm.id] || []);
+  const future = selDate > todayIso;
+  /* 跟「今天」一樣的可滑動列：點一下改、右滑刪，補記打錯也能改 */
   const detail = dayLog.length
-    ? `<div class="card logcard">${dayLog.map(e=>`<div class="logrow">
-        <span class="log-name">${esc(e.name)}${e.servings!==1?` ×${e.servings}`:""}</span>
-        <span class="log-pro">${r0(e.protein*e.servings)}<small>蛋白 g</small></span>
-        <span class="log-kcal">${r0(e.kcal*e.servings)}<small>kcal</small></span>
+    ? `<div class="card logcard">${dayLog.map(e=>`<div class="swipe" data-entry="${e.id}" data-date="${selDate}">
+        <div class="swipe-bg">
+          <button class="swipe-del" data-swipedel="${e.id}" aria-label="刪除 ${esc(e.name)}">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9.5 7V5h5v2M6.5 7l1 13h9l1-13"/><path d="M10.5 11v6M13.5 11v6"/></svg>刪除</button>
+        </div>
+        <div class="swipe-fg" role="button" tabindex="0" aria-label="編輯 ${esc(e.name)}"><div class="logrow">
+          <span class="log-name">${esc(e.name)}${e.servings!==1?` ×${e.servings}`:""}</span>
+          <span class="log-pro">${r0(e.protein*e.servings)}<small>蛋白 g</small></span>
+          <span class="log-kcal">${r0(e.kcal*e.servings)}<small>kcal</small></span>
+        </div></div>
       </div>`).join("")}</div>`
-    : `<div class="card"><div class="empty">這天沒有紀錄</div></div>`;
+    : `<div class="card"><div class="empty">${future ? "還沒到這天" : "這天沒有紀錄"}</div></div>`;
+  const addBtn = future ? "" :
+    `<button class="btn btn-soft addday" data-backfill="${selDate}">＋ ${
+      selDate === todayIso ? "記錄今天" : `補記${sp(dayLabel(selDate))}`}</button>`;
 
   const dObj = fromIso(selDate);
   return `<div class="stack">
@@ -866,12 +930,11 @@ function viewHistory(){
       <div class="dow">${["日","一","二","三","四","五","六"].map(x=>`<span>${x}</span>`).join("")}</div>
       <div class="cal">${cells.join("")}</div>
       <div class="legend">
-        <div class="legrow"><b>左・熱量</b>
-          <i class="dot" style="background:var(--mint)"></i>有赤字（≤ ${limit}）
-          <i class="dot" style="background:var(--peach)"></i>超過上限</div>
-        <div class="legrow"><b>右・蛋白質</b>
-          <i class="dot" style="background:var(--pink-deep)"></i>達標（≥ ${proteinTarget} g）
-          <i class="dot" style="background:var(--ink-30)"></i>不足</div>
+        <div class="legrow"><b>點點</b>
+          <i class="dot" style="background:var(--mint-deep)"></i>達標
+          <i class="dot" style="background:var(--ink-30)"></i>未達標</div>
+        <div class="legrow"><b>左・熱量</b>有赤字（≤ ${limit}）算達標</div>
+        <div class="legrow"><b>右・蛋白質</b>吃到目標（≥ ${proteinTarget} g）算達標</div>
       </div>
     </div>
     <div class="sec-title">${dObj.getMonth()+1} 月 ${dObj.getDate()} 日${selDate===iso(new Date())?"（今天）":""}${
@@ -885,6 +948,7 @@ function viewHistory(){
         <span>${def>=0?"赤字":"盈餘"} kcal</span></div>
     </div>` : ""}
     ${detail}
+    ${addBtn}
   </div>`;
 }
 
@@ -1047,6 +1111,7 @@ function exportMd(){
 /* ============================ 記錄面板 ============================ */
 let sheetMeal = "breakfast";
 let sheetMode = "add";      // add＝新增一筆，edit＝修改既有那筆
+let logDate = today();      // 這次要寫進哪一天；補記時＝過去的某一天
 let editId = null;
 const emptyDraft = () => ({name:"", kcal:"", protein:"", save:false, servings:"1"});
 let draft = emptyDraft();
@@ -1058,8 +1123,9 @@ function captureDraft(){
            servings: g("nfServ") ? g("nfServ").value : draft.servings};
 }
 
-function openSheet(){
+function openSheet(d){
   sheetMode = "add"; editId = null;
+  logDate = (d && d <= today()) ? d : today();   // 只能補過去，不能記未來
   sheetMeal = autoMeal();
   draft = emptyDraft();
   renderSheet(false);
@@ -1070,15 +1136,15 @@ const closeSheet = () => {
   const focused = document.activeElement;
   if(focused && typeof focused.blur === "function") focused.blur();
   $("#backdrop").classList.remove("open");
-  sheetMode = "add"; editId = null;
+  sheetMode = "add"; editId = null; logDate = today();
   window.scrollTo(0, 0);
 };
 /* 點今天的某一列 → 用同一個面板改內容、單份熱量／蛋白質、份數 */
-function openEdit(id){
-  const hit = findEntry(id);
+function openEdit(id, d = today()){
+  const hit = findEntry(id, d);
   if(!hit) return;
   const e = hit.entry;
-  sheetMode = "edit"; editId = id; sheetMeal = hit.meal;
+  sheetMode = "edit"; editId = id; sheetMeal = hit.meal; logDate = d;
   draft = {name:e.name, kcal:String(e.kcal), protein:String(e.protein),
            servings:String(e.servings), save:false};
   renderSheet(false);
@@ -1093,10 +1159,22 @@ function autoMeal(){
   const h = new Date().getHours();
   return h<10.5 ? "breakfast" : h<14.5 ? "lunch" : h<21 ? "dinner" : "snack";
 }
+/* 這筆要放進哪個分桶（分桶畫面上看不到，只決定排序）。
+   今天照現在幾點分；補記過去的日子沒有「現在幾點」可用，
+   就接在那天最後一筆後面，讓畫面上的順序＝輸入的順序 */
+function mealBucket(d){
+  if(d === today()) return autoMeal();
+  const day = S.days[d];
+  if(day) for(let i = MEALS.length - 1; i >= 0; i--){
+    if((day.meals[MEALS[i].id] || []).length) return MEALS[i].id;
+  }
+  return "breakfast";
+}
 
 function renderSheet(capture = true){
   if(capture) captureDraft();
-  const list = MEALS.flatMap(x => dayOf(iso(new Date())).meals[x.id] || []);
+  const backfill = logDate !== today();
+  const list = MEALS.flatMap(x => dayOf(logDate).meals[x.id] || []);
   const s = sumEntries(list);
   const room = kcalLimit() - s.kcal, needP = S.settings.proteinTarget - s.protein;
   const headSum = (room >= 0 ? `還能吃 ${r0(room)} kcal` : `已超出上限 ${r0(-room)} kcal`)
@@ -1108,7 +1186,8 @@ function renderSheet(capture = true){
   const head = `
     <div class="grab"></div>
     <div class="sheet-head">
-      <div>${sheetMode==="edit" ? `<div class="sheet-title">編輯紀錄</div>` : ""}
+      <div>${sheetMode==="edit" ? `<div class="sheet-title">編輯紀錄${backfill ? `・${dayLabel(logDate)}` : ""}</div>`
+             : backfill ? `<div class="sheet-title">補記${sp(dayLabel(logDate))}</div>` : ""}
         <div style="font-size:11.5px;color:var(--ink-60)">${headSum}</div></div>
       <button class="x" id="closeSheet" aria-label="關閉">✕</button>
     </div>`;
@@ -1130,16 +1209,32 @@ function renderSheet(capture = true){
         </div>
         <div class="editsum" id="editSum">${editSumText()}</div>
         <button class="btn btn-main" id="nfSaveEdit">儲存修改</button>
-        <button class="btn btn-soft" id="nfDelEdit" style="color:var(--peach-deep)">刪除這筆</button>
+        <button class="btn btn-danger" id="nfDelEdit">刪除這筆</button>
       </div>
     </div>`;
     return;
   }
 
+  /* 日期列：今天／昨天／前天一點就切，再遠的日子用日期選單 */
+  const t0 = today();
+  const quick = [[t0, "今天"], [iso(addDays(new Date(), -1)), "昨天"], [iso(addDays(new Date(), -2)), "前天"]];
+  const custom = !quick.some(([d]) => d === logDate);
+  const dateBar = `
+      <div class="datebar">
+        <div class="segrow">
+          ${quick.map(([d, label]) => `<button class="seg" data-logdate="${d}"
+            aria-pressed="${!custom && d === logDate}">${label}</button>`).join("")}
+          <label class="seg segdate" aria-pressed="${custom}">${custom ? shortDate(logDate) : "選日期"}
+            <input type="date" id="nfDate" max="${t0}" value="${logDate}" aria-label="要記到哪一天"></label>
+        </div>
+        ${backfill ? `<div class="datenote">這些食物會記到 <b>${dayLabel(logDate)}</b>，不算進今天</div>` : ""}
+      </div>`;
+
   $("#sheet").innerHTML = head + `
     <div class="sheet-body">
+      ${dateBar}
       <div class="block">
-        <div class="block-h"><b>輸入食物</b></div>
+        <div class="block-h"><b>輸入食物</b><span>記到${dayTag(logDate)}</span></div>
         <div class="formgrid">
           <div class="field span2"><label>食物名稱<i class="req">＊</i></label>
             <input id="nfName" value="${v("name")}" placeholder="例：南椰紅咖哩雞絞肉"></div>
@@ -1152,7 +1247,7 @@ function renderSheet(capture = true){
           <input type="checkbox" id="nfSave" ${draft.save ? "checked" : ""}
             style="width:17px;height:17px;accent-color:var(--pink-deep)">
           存進常吃清單</label>
-        <button class="btn btn-main" id="nfAdd">紀錄飯盆</button>
+        <button class="btn btn-main" id="nfAdd">${backfill ? `補記到${dayTag(logDate)}` : "紀錄飯盆"}</button>
       </div>
 
       <div class="food-key">標籤右側數字＝單份的 熱量 kcal ／ <b>蛋白質 g</b></div>
@@ -1164,7 +1259,7 @@ function renderSheet(capture = true){
 /* ---- 存下編輯結果（可復原） ---- */
 function saveEdit(){
   captureDraft();
-  const d = iso(new Date());
+  const d = logDate;
   const hit = findEntry(editId, d);
   if(!hit){ closeSheet(); return; }
   const name = draft.name.trim();
@@ -1183,21 +1278,23 @@ function saveEdit(){
 }
 
 function addEntry(food, servings){
-  const d = iso(new Date());
+  const d = logDate;
   if(!S.days[d]) S.days[d] = {date:d, meals:{breakfast:[],lunch:[],dinner:[],snack:[]}};
-  S.days[d].meals[autoMeal()].push({id:uid(), name:food.name,
+  S.days[d].meals[mealBucket(d)].push({id:uid(), name:food.name,
     unit:food.unit||"份", servings, kcal:food.kcal, protein:food.protein,
     fat:food.fat||0, carbs:food.carbs||0});
   save();
-  const hit = celebrateIfHit();       // 剛好雙達標才會撒星星
-  closeSheet();                       // 紀錄完直接收起面板
-  showRecorded(food, servings, hit);  // 用提示 modal 告訴使用者已紀錄
-  if(tab==="today") render();
+  const hit = celebrateIfHit(d);         // 剛好雙達標才會撒星星
+  closeSheet();                          // 紀錄完直接收起面板
+  showRecorded(food, servings, hit, d);  // 用提示 modal 告訴使用者已紀錄
+  render();                              // 補記後月曆那一格也要跟著更新
 }
 
-/* 回傳「這一筆剛好讓今天雙達標（有赤字＋蛋白質夠）」，讓提示 modal 一起說 */
-function celebrateIfHit(){
-  const now = dayHit(totalsOf(iso(new Date())));
+/* 回傳「這一筆剛好讓今天雙達標（有赤字＋蛋白質夠）」，讓提示 modal 一起說。
+   補記過去的日子不撒星星：那是已經發生過的事，不是現在達成的 */
+function celebrateIfHit(d){
+  if(d !== today()) return false;
+  const now = dayHit(totalsOf(today()));
   const justHit = now && !lastHit;
   if(justHit) stars();
   lastHit = now;
@@ -1206,13 +1303,14 @@ function celebrateIfHit(){
 
 /* ---- 已紀錄提示 modal ---- */
 let doneTimer = null;
-function showRecorded(food, servings, justHit){
-  const t = totalsOf(iso(new Date()));
+function showRecorded(food, servings, justHit, d = today()){
+  const t = totalsOf(d), back = d !== today();
+  $("#doneTitle").textContent = back ? `已補記到${sp(dayLabel(d))}` : "已紀錄";
   $("#doneFood").innerHTML =
     `${esc(food.name)}${servings!==1?` ×${servings}`:""}　<b>${r0(food.kcal*servings)} kcal・蛋白 ${r0(food.protein*servings)} g</b>`;
   const room = kcalLimit() - t.kcal;
   $("#doneSum").innerHTML =
-    `今日累計 ${r0(t.kcal)} / 上限 ${kcalLimit()} kcal`
+    `${back ? dayLabel(d) : "今日"}累計 ${r0(t.kcal)} / 上限 ${kcalLimit()} kcal`
     + `（${room>=0 ? `還能吃 ${r0(room)}` : `超出 ${r0(-room)}`} kcal）<br>`
     + `蛋白質 ${r0(t.protein)} / ${S.settings.proteinTarget} g`
     + (justHit ? `<div class="donehit">赤字＋蛋白質都達標 🎉</div>` : "");
@@ -1256,7 +1354,7 @@ function stars(){
 }
 
 /* ---------------- 刪除一筆紀錄（含復原） ---------------- */
-function findEntry(id, d = iso(new Date())){
+function findEntry(id, d = today()){
   const day = S.days[d];
   if(!day) return null;
   for(const m of MEALS){
@@ -1266,8 +1364,7 @@ function findEntry(id, d = iso(new Date())){
   }
   return null;
 }
-function deleteEntry(id){
-  const d = iso(new Date());
+function deleteEntry(id, d = today()){
   const hit = findEntry(id, d);
   if(!hit) return;
   S.days[d].meals[hit.meal].splice(hit.index, 1);
@@ -1281,9 +1378,9 @@ function deleteEntry(id){
 }
 function afterChange(d){
   save();
-  lastHit = dayHit(totalsOf(d));
+  if(d === today()) lastHit = dayHit(totalsOf(d));
   renderSheet();
-  if(tab === "today") render();
+  render();
 }
 
 /* ---------------- 右滑刪除 ---------------- */
@@ -1307,13 +1404,13 @@ function openRowNow(row){
   openRow = row;
 }
 function removeRow(row){
-  const id = row.dataset.entry;
+  const id = row.dataset.entry, d = row.dataset.date || today();
   if(openRow === row) openRow = null;
   row.classList.remove("dragging");
   row.style.height = row.offsetHeight + "px";
   rowFg(row).style.transform = `translateX(${SWIPE_DIR * 100}%)`;
   requestAnimationFrame(()=> row.classList.add("removing"));
-  setTimeout(()=> deleteEntry(id), 260);
+  setTimeout(()=> deleteEntry(id, d), 260);
 }
 
 view.addEventListener("pointerdown", ev => {
@@ -1349,7 +1446,7 @@ function endDrag(ev){
   row.classList.remove("dragging");
   if(axis !== "x"){                              // 只是點一下 → 編輯這筆
     if(row.classList.contains("open")) closeRow(row);
-    else openEdit(row.dataset.entry);
+    else openEdit(row.dataset.entry, row.dataset.date || today());
     return;
   }
   if(Math.abs(x) >= row.offsetWidth * SWIPE_KILL) removeRow(row);
@@ -1386,7 +1483,7 @@ document.addEventListener("click", ev => {
   if((el = hit("[data-swipedel]"))){ removeRow(el.closest(".swipe")); return; }
   if(hit("#toastUndo"))          { const fn = $("#toast")._undo; hideToast(); if(fn) fn(); return; }
   if(hit("#nfSaveEdit"))        { saveEdit(); return; }
-  if(hit("#nfDelEdit"))         { deleteEntry(editId); return; }
+  if(hit("#nfDelEdit"))         { deleteEntry(editId, logDate); return; }
   if(hit("#nfAdd"))             {
     captureDraft();
     const name = draft.name.trim();
@@ -1403,6 +1500,14 @@ document.addEventListener("click", ev => {
     addEntry(food, 1); return;
   }
 
+  if((el = hit("[data-backfill]"))){ openSheet(el.dataset.backfill); return; }
+  if((el = hit("[data-logdate]"))) { captureDraft(); logDate = el.dataset.logdate; renderSheet(false); return; }
+  if(hit(".segdate"))           {
+    /* 電腦瀏覽器點日期欄不一定會彈面板，能叫就叫一下 */
+    const inp = $("#nfDate");
+    if(inp && inp.showPicker){ try{ inp.showPicker(); }catch(e){} }
+    return;
+  }
   if((el = hit("[data-day]")))  { selDate = el.dataset.day; render(); return; }
   if((el = hit("[data-mon]")))  { calMonth.setMonth(calMonth.getMonth()+Number(el.dataset.mon)); render(); return; }
   if((el = hit("[data-range]"))){ trendRange = Number(el.dataset.range); render(); return; }
@@ -1416,6 +1521,13 @@ document.addEventListener("click", ev => {
 });
 
 document.addEventListener("change", ev => {
+  if(ev.target.id === "nfDate"){
+    const v = ev.target.value;
+    if(v && v <= today()){ captureDraft(); logDate = v; }
+    else toast("只能補以前的日子，不能記未來");
+    renderSheet(false);
+    return;
+  }
   const el = ev.target.closest("[data-set]");
   if(!el) return;
   const v = parseFloat(el.value);
@@ -1435,7 +1547,8 @@ document.addEventListener("keydown", ev => {
   if(ev.key==="Enter" || ev.key===" "){
     if(ev.target.id === "catBubble"){ ev.preventDefault(); catNudge++; paintCatBubble(); return; }
     const fg = ev.target.closest && ev.target.closest(".swipe-fg");
-    if(fg){ ev.preventDefault(); openEdit(fg.closest(".swipe").dataset.entry); }
+    if(fg){ const row = fg.closest(".swipe");
+            ev.preventDefault(); openEdit(row.dataset.entry, row.dataset.date || today()); }
   }
 });
 window.addEventListener("resize", ()=>{ if(tab==="trends") drawCharts(); });
