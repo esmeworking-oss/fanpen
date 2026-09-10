@@ -13,7 +13,7 @@
 <meta name="application-name" content="飯盆">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
-<!-- build: 90a4fb326f -->
+<!-- build: 50f3ab731e -->
 <meta charset="utf-8">
 <title>飯盆</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -254,13 +254,20 @@ input{font:inherit;color:inherit}
 .seg[aria-pressed="true"]{background:#fff; color:var(--ink); box-shadow:var(--shadow-soft)}
 
 /* ---------- 補記日期 ---------- */
-.datebar{display:flex; flex-direction:column; gap:8px}
-.segdate{position:relative; overflow:hidden; display:flex; align-items:center;
-  justify-content:center; text-align:center; cursor:pointer}
-.segdate input{position:absolute; inset:0; width:100%; height:100%;
-  opacity:0; padding:0; border:0; background:none; cursor:pointer}
 .datenote{font-size:11.5px; color:var(--ink-60); text-align:center; line-height:1.5}
 .datenote b{color:var(--pink-deep); font-weight:800}
+/* 補記是另一個彈窗：紫色標籤＋提示條，一眼跟「記今天」分得出來 */
+.kind-tag{display:inline-block; margin-right:6px; padding:1px 8px; border-radius:var(--r-pill);
+  background:var(--lilac-deep); color:#FFF9F0; font-family:var(--display); font-size:11.5px;
+  font-weight:800; vertical-align:2px}
+.backnote{background:#F1EBFF; color:var(--lilac-deep); border-radius:var(--r-field);
+  padding:9px 12px; font-size:12px; font-weight:600; text-align:center; line-height:1.5}
+.backnote b{font-weight:800}
+/* 份數 */
+.servrow{display:flex; align-items:center; gap:10px}
+.servrow > span{font-size:10.5px; font-weight:700; color:var(--ink-60); flex:none}
+.servrow .segrow{flex:1}
+.servrow .seg{font-family:var(--num); font-weight:800}
 .addday{color:var(--ink-60)}
 .block{background:#fff; border-radius:var(--r-card); padding:14px; box-shadow:var(--shadow-soft);
   display:flex; flex-direction:column; gap:10px}
@@ -412,6 +419,80 @@ input{font:inherit;color:inherit}
 .fade{animation:fade .32s var(--spring) both}
 @keyframes fade{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
 
+
+/* ---------- 連續達標徽章 ---------- */
+.streakbar{display:flex; align-items:center; gap:10px; padding:11px 13px;
+  background:var(--sunk); border-radius:var(--r-field)}
+/* 里程碑當天轉金：底色變化＋文字加深，不只靠顏色 */
+.streakbar.gold{background:linear-gradient(120deg,#FFF3CC,#FFE49A)}
+.streak-n{display:inline-flex; align-items:center; gap:8px;
+  background:var(--pink-cta); color:#FFF9F0; border-radius:var(--r-pill);
+  padding:5px 12px; font-family:var(--display); font-size:12.5px; font-weight:800;
+  white-space:nowrap; flex:none}
+.streak-dots{display:flex; align-items:center; gap:3px; flex-wrap:wrap}
+.streak-dots i{width:7px; height:7px; border-radius:50%; background:var(--mint-deep)}
+.streak-dots i.off{background:var(--ink-30)}
+.streak-dots span{font-family:var(--num); font-size:10.5px; font-weight:800; color:var(--ink-60)}
+.streak-note{font-size:11px; color:var(--ink-60); font-weight:500; margin-left:auto;
+  white-space:nowrap; flex:none}
+.streak-word{font-size:12.5px; line-height:1.65; font-weight:500; padding:2px 4px;
+  cursor:pointer; transition:opacity .18s ease}
+.streak-word:active{opacity:.55}
+.streak-word b{color:var(--pink-cta); font-weight:800; font-family:var(--num);
+  font-variant-numeric:tabular-nums}
+
+/* ---------- 回顧入口 ---------- */
+.revbtn{display:inline-flex; align-items:center; gap:6px; align-self:center;
+  background:var(--card); border-radius:var(--r-pill); padding:10px 18px;
+  box-shadow:var(--shadow-soft); font-family:var(--display); font-size:13px; font-weight:700;
+  color:var(--pink-cta); transition:transform .16s var(--spring), box-shadow .2s ease}
+.revbtn:hover{box-shadow:var(--shadow-pop)}
+.revbtn:active{transform:scale(.95)}
+.revbtn svg{width:15px; height:15px; fill:none; stroke:currentColor; stroke-width:2;
+  stroke-linecap:round; stroke-linejoin:round}
+.nudge{display:flex; align-items:center; gap:10px; padding:12px 13px}
+.nudge p{flex:1; min-width:0; font-size:12.5px; font-weight:500; line-height:1.5}
+.nudge p b{color:var(--pink-cta); font-weight:800}
+.nudge .go{flex:none; font-family:var(--display); font-size:12.5px; font-weight:800;
+  color:var(--pink-cta); background:var(--sunk); border-radius:var(--r-pill); padding:8px 13px;
+  transition:transform .16s var(--spring)}
+.nudge .go:active{transform:scale(.94)}
+.nudge .x{width:26px; height:26px; font-size:13px}
+.sec-title{display:flex; align-items:center; gap:6px}
+.sec-act{margin-left:auto; font-family:var(--body); font-size:11.5px; font-weight:700;
+  color:var(--pink-cta); padding:2px 4px}
+
+/* ---------- 每日回顧面板 ---------- */
+.rev-date{font-family:var(--display); font-size:18px; font-weight:800; outline:none}
+.rev-sub{font-size:11.5px; color:var(--ink-60); font-weight:500; margin-top:3px}
+.rev-list{background:var(--sunk); border-radius:var(--r-card); padding:3px 14px}
+.rev-list .logrow{padding:8px 0}
+.rev-list .logrow+.logrow{border-top:1px solid var(--line)}
+.rev-more{font-size:11.5px; color:var(--ink-60); text-align:center; padding:2px 0 4px}
+.rev-acts{display:grid; grid-template-columns:1fr 1fr; gap:9px; flex:none; padding-top:6px}
+.btn[disabled]{opacity:.45; pointer-events:none}
+
+/* ---------- 圖卡預覽（無法叫出原生分享時的退路） ---------- */
+.cardwrap{width:100%; max-width:290px; display:flex; flex-direction:column; gap:11px;
+  transform:scale(.9) translateY(8px); transition:transform .3s var(--spring)}
+.modal.open .cardwrap{transform:none}
+.cardwrap img{width:100%; display:block; border-radius:18px;
+  box-shadow:0 18px 40px rgba(61,58,78,.32)}
+/* 白字壓在淺色圖卡上讀不到，改成深色小膠囊 */
+.cardhint{align-self:center; font-size:11.5px; font-weight:700; color:#FFF9F0;
+  background:rgba(61,58,78,.86); border-radius:var(--r-pill); padding:6px 14px; text-align:center}
+.cardacts{display:flex; gap:9px}
+.cardacts .btn{flex:1; text-decoration:none; display:block}
+
+/* ---------- 開關 ---------- */
+.sw{width:46px; height:27px; border-radius:99px; background:var(--ink-30); position:relative;
+  flex:none; transition:background .22s ease}
+.sw::after{content:""; position:absolute; top:3px; left:3px; width:21px; height:21px;
+  border-radius:50%; background:#fff; box-shadow:var(--shadow-soft);
+  transition:transform .28s var(--spring)}
+.sw[aria-checked="true"]{background:var(--mint-deep)}
+.sw[aria-checked="true"]::after{transform:translateX(19px)}
+
 @media(prefers-reduced-motion:reduce){
   *,*::before,*::after{animation-duration:.01ms !important;transition-duration:.01ms !important}
 }
@@ -453,7 +534,18 @@ input{font:inherit;color:inherit}
       <div class="donetitle" id="doneTitle">已紀錄</div>
       <div class="donefood" id="doneFood"></div>
       <div class="donesum" id="doneSum"></div>
+      <button class="btn btn-soft" id="doneReview" hidden>看今天的回顧</button>
       <button class="btn btn-main" id="doneOk">好</button>
+    </div>
+  </div>
+  <div class="modal" id="cardModal">
+    <div class="cardwrap" role="dialog" aria-modal="true" aria-label="今日圖卡">
+      <img id="cardImg" alt="">
+      <div class="cardhint">長按圖片存到相簿，或直接下載</div>
+      <div class="cardacts">
+        <a class="btn btn-soft" id="cardDl" download>下載 PNG</a>
+        <button class="btn btn-main" id="cardClose">關閉</button>
+      </div>
     </div>
   </div>
   <div class="toast" id="toast"></div>
@@ -486,7 +578,8 @@ const SEED_FOODS = [
   {name:"烤地瓜",         unit:"條", kcal:130, protein:2,  fat:0,  carbs:30},
 ];
 /* 減脂期：tdee＝維持熱量，deficit＝每天想製造的赤字，兩者相減就是當日熱量上限 */
-const DEFAULTS = {tdee:1730, deficit:300, proteinTarget:105, proteinPerMeal:32, name:"Esme"};
+const DEFAULTS = {tdee:1730, deficit:300, proteinTarget:105, proteinPerMeal:32, name:"Esme",
+                  shareName:true, shareTargets:true};
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -586,6 +679,120 @@ const kcalHit = t => t.kcal <= kcalLimit();
 const proHit  = t => t.protein >= S.settings.proteinTarget;
 const dayHit  = t => kcalHit(t) && proHit(t);                  // 雙達標＝赤字有做到＋蛋白質吃夠
 const tooLow  = t => t.kcal < kcalLimit()*0.7;                 // 赤字開太大的提醒線
+
+/* ============================ 連續達標 ============================ */
+const yesterdayIso = () => iso(addDays(new Date(), -1));
+const firstLogged  = () => Object.keys(S.days).sort()[0] || today();
+
+/* 從 endIso 往前數連續雙達標幾天。沒記錄的日子蛋白質是 0，dayHit 自然為 false，
+   所以空白日不用特別處理，它天生就會斷 */
+function streakUntil(endIso){
+  const first = firstLogged();
+  let n = 0, d = endIso;
+  while(d >= first){
+    if(!dayHit(totalsOf(d))) break;
+    n++;
+    d = iso(addDays(fromIso(d), -1));
+  }
+  return n;
+}
+/* 今天還沒過完，所以今天只加分不扣分：連續從昨天往前數，今天達標才 +1。
+   一天還沒結束就說你斷了，是最傷人的設計 */
+const streakNow     = () => streakUntil(yesterdayIso()) + (dayHit(totalsOf(today())) ? 1 : 0);
+const streakPending = () => !dayHit(totalsOf(today())) && streakUntil(yesterdayIso()) > 0;
+/* 保底：從來沒有雙達標過的人，至少還有「連續記錄」可以看，不要讓他看到「連續 0 天」 */
+function logStreak(){
+  const first = firstLogged();
+  let n = 0, d = today();
+  if(!hasLog(d)) d = iso(addDays(fromIso(d), -1));   // 今天還沒記不算斷
+  while(d >= first && hasLog(d)){ n++; d = iso(addDays(fromIso(d), -1)); }
+  return n;
+}
+/* 歷史最長連續，斷掉的時候拿來安慰用 */
+function bestStreak(){
+  const hits = Object.keys(S.days).filter(d => dayHit(totalsOf(d))).sort();
+  let best = 0, run = 0, prev = null;
+  for(const d of hits){
+    run = (prev && d === iso(addDays(fromIso(prev), 1))) ? run + 1 : 1;
+    prev = d;
+    if(run > best) best = run;
+  }
+  return best;
+}
+
+/* 里程碑：只有剛好踩到的那天才有特殊文字，隔天回到平常文案。
+   如果每天都特別，就沒有一天特別 */
+const MILESTONES = {
+  3:  "連續 3 天，開始有形狀了喵。",
+  5:  "連 5 天。這已經不是運氣了。",
+  7:  "一整週雙達標，我把最大的罐頭留給你。",
+  10: "兩位數了喵，我開始有點佩服你。",
+  14: "兩週。身體大概自己有感覺了吧？",
+  21: "21 天。這不是意志力了，是生活。",
+  30: "整整一個月。你比我還規律。",
+  50: "50 天。飯盆已經沒有東西可以教你了。",
+  66: "66 天，習慣養成的平均天數，你到了。",
+  100:"100 天。飯盆宣布退休，之後你自己管。",
+};
+const MILES = [3,5,7,10,14,21,30,50,66,100];
+const GOLD  = [7,14,30,100];
+const isMilestone = n => n >= 3 && (MILESTONES[n] != null || (n > 100 && n % 50 === 0));
+const isGold      = n => GOLD.indexOf(n) >= 0 || (n > 100 && n % 50 === 0);
+const milestoneWord = n => MILESTONES[n] || (isMilestone(n) ? `連續 ${n} 天，我已經數不動了喵。` : "");
+const nextMilestone = n => MILES.find(m => m > n) || (Math.floor(n/50) + 1) * 50;
+
+/* 平常日的文案池。{n} 連續天數、{next} 下一個里程碑、{gap} 還差幾天、
+   {best} 歷史最長、{log} 連續記錄天數、{left} 還差蛋白質、{room} 還能吃多少 */
+const STREAK_TALK = {
+  run: [
+    "連續 <b>{n}</b> 天雙達標，飯盆很滿意。",
+    "第 <b>{n}</b> 天了，再 <b>{gap}</b> 天就滿 {next} 天喵。",
+    "連 <b>{n}</b> 天。這種穩定比爆發有用。",
+  ],
+  pending: [
+    "連續 <b>{n}</b> 天還撐著，今天再補 <b>{left}</b> g 蛋白質就續上了。",
+    "<b>{n}</b> 天的紀錄在你手上，今天還有 <b>{room}</b> kcal 可以用。",
+    "今天還沒收工喔，別讓 <b>{n}</b> 天在最後一餐翻船。",
+  ],
+  broke: [
+    "連續在前幾天停下了。前面那 <b>{best}</b> 天不會消失喵。",
+    "斷了就斷了，今天重新開一輪就好。",
+    "最長紀錄還留著：<b>{best}</b> 天。要不要挑戰看看？",
+  ],
+  none: [
+    "已經連續記錄 <b>{log}</b> 天了，記錄本身就是一半的成功。",
+    "先求有記，達標慢慢來喵。",
+  ],
+  one: [
+    "連續 1 天。明天再來一次，就叫做連續了。",
+  ],
+};
+const fillVars = (line, vals) => line.replace(/\{(\w+)\}/g, (m, k) => k in vals ? vals[k] : m);
+
+function streakVars(d){
+  const t = totalsOf(d);
+  const n = d === today() ? streakNow() : streakUntil(d);
+  const next = nextMilestone(n);
+  return {n, next, gap: next - n, best: bestStreak(), log: logStreak(),
+          left: r0(Math.max(S.settings.proteinTarget - t.protein, 0)),
+          room: r0(Math.max(kcalLimit() - t.kcal, 0))};
+}
+/* 這一天要講的那句話。nudge 是「點一下換一句」的位移 */
+function streakLine(d, nudge = 0){
+  const v = streakVars(d), isT = d === today();
+  /* 里程碑當天最優先。今天還沒達標時 v.n 是昨天的數字，不能拿來慶祝 */
+  if(isMilestone(v.n) && (!isT || dayHit(totalsOf(today())))) return milestoneWord(v.n);
+  let pool;
+  if(isT && streakPending() && v.n >= 2) pool = STREAK_TALK.pending;
+  else if(v.n >= 2)                      pool = STREAK_TALK.run;
+  else if(v.n === 1)                     pool = STREAK_TALK.one;
+  else if(v.best >= 3)                   pool = STREAK_TALK.broke;
+  else                                   pool = STREAK_TALK.none;
+  const usable = pool.filter(l => (v.left > 0 || !l.includes("{left}"))
+                               && (v.room > 0 || !l.includes("{room}")));
+  if(usable.length) pool = usable;
+  return fillVars(pool[(hashStr(d + v.n) + nudge) % pool.length], v);
+}
 
 /* ============================ 畫面 ============================ */
 const $ = s => document.querySelector(s);
@@ -734,11 +941,17 @@ function catBubbleHtml(){
   const last = log[log.length - 1];
   const room = kcalLimit() - t.kcal, left = S.settings.proteinTarget - t.protein;
 
+  /* 里程碑當天只講這件事，別跟食物文案搶 */
+  const sv = streakVars(iso(new Date()));
+  if(dayHit(t) && isMilestone(sv.n)) return milestoneWord(sv.n);
+
   let pool;
   if(!last)          pool = CAT_TALK.empty;
   else if(room < 0)  pool = CAT_TALK.over;
   else if(dayHit(t)) pool = CAT_TALK.done.concat(CAT_TALK[foodMood(last)] || CAT_TALK.def);
   else               pool = CAT_TALK[foodMood(last)] || CAT_TALK.def;
+  /* 連續 2 天以上就讓貓咪偶爾提一下，點泡泡可以換到 */
+  if(sv.n >= 2) pool = pool.concat(streakPending() ? STREAK_TALK.pending : STREAK_TALK.run);
 
   /* 額度已滿／蛋白質已達標時，別講出「還差 0 g」這種怪句子 */
   const usable = pool.filter(l => (left > 0 || !l.includes("{left}"))
@@ -747,15 +960,15 @@ function catBubbleHtml(){
 
   const seed = hashStr((last ? last.id + last.name : "empty") + log.length);
   const line = pool[(seed + catNudge) % pool.length];
-  const vals = {
+  const vals = Object.assign({}, sv, {
     food: last ? esc(last.name) : "",
     kcal: last ? r0(last.kcal * last.servings) : 0,
     pro:  last ? r0(last.protein * last.servings) : 0,
     room: r0(Math.max(room, 0)),
     over: r0(Math.max(-room, 0)),
     left: r0(Math.max(left, 0)),
-  };
-  return line.replace(/\{(\w+)\}/g, (m, k) => k in vals ? vals[k] : m);
+  });
+  return fillVars(line, vals);
 }
 function paintCatBubble(){
   const b = $("#catBubble");
@@ -811,7 +1024,18 @@ function viewToday(){
         <b>${r0(t.kcal)} kcal・蛋白 ${r0(t.protein)} g</b></div></div>`
     : `<div class="card"><div class="empty">還沒有紀錄，按右下角 ＋ 開始</div></div>`;
 
+  /* 一天最多出現一次、可以直接關掉的收尾提示。不用 modal 擋路 */
+  const yIso = yesterdayIso();
+  const nudge = (hasLog(yIso) && S.settings.reviewSeenDate !== yIso)
+    ? `<div class="card nudge">
+        <p>${dayHit(totalsOf(yIso)) ? `昨天<b>雙達標</b>了，看一下？` : `昨天的紀錄還沒收尾，看一下？`}</p>
+        <button class="go" data-review="${yIso}">看回顧</button>
+        <button class="x" id="nudgeX" aria-label="關閉提示">✕</button>
+      </div>`
+    : "";
+
   return `<div class="stack">
+    ${nudge}
     <div class="card barcard">
       ${stats}
       <div class="bars">
@@ -847,6 +1071,10 @@ function viewToday(){
            aria-live="polite" aria-label="貓咪說的話，點一下換一句"></div>
       <div class="hero-cat" role="img" aria-label="小貓在吃飯"></div>
     </div>
+    <button class="revbtn" data-review="${today()}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20a8 8 0 1 0-7.7-10"/><path d="M4 4v6h6"/><path d="M12 8v4.5l3 1.8"/></svg>
+      今日回顧
+    </button>
   </div>`;
 }
 function paintBars(){
@@ -938,7 +1166,8 @@ function viewHistory(){
       </div>
     </div>
     <div class="sec-title">${dObj.getMonth()+1} 月 ${dObj.getDate()} 日${selDate===iso(new Date())?"（今天）":""}${
-      hasLog(selDate) && dayHit(t) ? `<span class="sec-hint">雙達標 🎉</span>` : ""}</div>
+      hasLog(selDate) && dayHit(t) ? `<span class="sec-hint">雙達標 🎉</span>` : ""}${
+      hasLog(selDate) ? `<button class="sec-act" data-review="${selDate}">回顧</button>` : ""}</div>
     ${hasLog(selDate) ? `<div class="card statrow" style="padding:12px">
       <div class="stat"><b style="color:${kcalHit(t)?"var(--ink)":"var(--peach-deep)"}">${r0(t.kcal)}</b>
         <span>熱量／上限 ${limit}</span></div>
@@ -1086,6 +1315,18 @@ function viewSettings(){
           <button class="del" data-delfav="${f.id}" aria-label="刪除 ${esc(f.name)}">✕</button></div>`).join("")}
     </div>
 
+    <div class="sec-title">分享圖卡</div>
+    <div class="card" style="padding:6px 16px">
+      ${[["shareName","顯示名字","關掉之後圖卡只寫「飯盆」"],
+         ["shareTargets","顯示目標值","目標值會間接透露體重區間，關掉就只顯示吃了多少"]]
+        .map(([k,t,h])=>{
+          const on = S.settings[k] !== false;
+          return `<div class="row"><div class="rl">${t}<small>${h}</small></div>
+            <button class="sw" role="switch" data-toggle="${k}" aria-checked="${on}"
+              aria-label="${t}"></button></div>`;
+        }).join("")}
+    </div>
+
     <div class="sec-title">資料</div>
     <div class="stack">
       <button class="btn btn-soft" data-export="md">複製成 Markdown 表格</button>
@@ -1108,9 +1349,440 @@ function exportMd(){
   }).join("\n\n");
 }
 
+/* ============================ 每日回顧 ============================ */
+let reviewDate = today();
+let reviewNudge = 0;
+let reviewWord = "";        // 面板上那句話，圖卡要印一模一樣的
+
+/* 提示卡只認「昨天」，所以只有回顧昨天才算把它看掉 */
+function markReviewSeen(d){
+  if(d !== yesterdayIso()) return;
+  S.settings.reviewSeenDate = d;
+  save();
+}
+function dismissNudge(){
+  S.settings.reviewSeenDate = yesterdayIso();
+  save();
+}
+
+function reviewHtml(d){
+  const t = totalsOf(d), limit = kcalLimit(), pt = S.settings.proteinTarget, def = deficitOf(t);
+  const isT = d === today(), has = hasLog(d), dObj = fromIso(d);
+  const v = streakVars(d);
+  const state = !has ? "沒有紀錄"
+    : dayHit(t) ? "雙達標" : kcalHit(t) ? "熱量有赤字" : proHit(t) ? "蛋白質達標" : "還在路上";
+  const head = `<div class="grab"></div>
+    <div class="sheet-head">
+      <div>
+        <div class="rev-date" id="revDate" tabindex="-1">${dObj.getMonth()+1} 月 ${dObj.getDate()} 日${isT?"（今天）":""}</div>
+        <div class="rev-sub">星期${WEEK[dObj.getDay()]}・${state}</div>
+      </div>
+      <button class="x" data-closesheet aria-label="關閉回顧">✕</button>
+    </div>`;
+
+  if(!has) return head + `<div class="sheet-body">
+      <div class="empty">${d > today() ? "還沒到這天" : "這天沒有紀錄"}</div>
+      ${d > today() ? "" : `<button class="btn btn-soft" data-backfill="${d}">＋ 補記這天</button>`}
+    </div>`;
+
+  const stats = `<div class="todaystats" style="margin:0 0 16px">
+    <div class="tstat">
+      <b style="color:${def>=0?"var(--mint-deep)":"var(--peach-deep)"}">${def>=0?"−":"+"}${r0(Math.abs(def))}</b>
+      <span>${def>=0?"赤字 kcal":"盈餘 kcal"}</span></div>
+    <div class="tstat">
+      <b style="color:${proHit(t)?"var(--mint-deep)":"var(--ink)"}">${r0(t.protein)}</b>
+      <span>蛋白質 g</span></div>
+    <div class="tstat">
+      <b class="word" style="color:${dayHit(t)?"var(--mint-deep)":"var(--ink-60)"}">${
+        dayHit(t) ? "雙達標" : (kcalHit(t)||proHit(t)) ? "差一點" : "未達標"}</b>
+      <span>這天的結果</span></div>
+  </div>`;
+
+  const bars = `<div class="bars">
+    <div>
+      <div class="bar-head">
+        <span class="bar-label"><i class="dot" style="background:var(--pink)"></i>蛋白質</span>
+        <span class="bar-val"><b id="revProNum" style="color:${proHit(t)?"var(--mint-deep)":"var(--ink)"}">0</b><span> / ${pt} g</span></span>
+      </div>
+      <div class="bar-track" role="progressbar" aria-label="蛋白質進度"
+        aria-valuemin="0" aria-valuemax="${pt}" aria-valuenow="${r0(t.protein)}"
+        aria-valuetext="蛋白質 ${r0(t.protein)} g，目標 ${pt} g"><i class="bar-fill" id="revProFill"></i></div>
+    </div>
+    <div>
+      <div class="bar-head">
+        <span class="bar-label"><i class="dot" style="background:var(--yellow)"></i>熱量</span>
+        <span class="bar-val"><b id="revKcalNum" style="color:${kcalHit(t)?"var(--ink)":"var(--peach-deep)"}">0</b><span> / ${limit} kcal</span></span>
+      </div>
+      <div class="bar-track" role="progressbar" aria-label="熱量進度"
+        aria-valuemin="0" aria-valuemax="${limit}" aria-valuenow="${r0(t.kcal)}"
+        aria-valuetext="熱量 ${r0(t.kcal)} kcal，上限 ${limit} kcal"><i class="bar-fill" id="revKcalFill"></i></div>
+    </div>
+  </div>`;
+
+  const rows = MEALS.flatMap(m => dayOf(d).meals[m.id] || []);
+  const list = `<div class="rev-list">${rows.map(e=>`<div class="logrow">
+      <span class="log-name">${esc(e.name)}${e.servings!==1?` ×${e.servings}`:""}</span>
+      <span class="log-pro">${r0(e.protein*e.servings)}<small>蛋白 g</small></span>
+      <span class="log-kcal">${r0(e.kcal*e.servings)}<small>kcal</small></span>
+    </div>`).join("")}</div>`;
+
+  /* 徽章：里程碑當天轉金。圓點只是裝飾，真正的資訊由文字承擔 */
+  const gold = isGold(v.n) && (!isT || dayHit(t));
+  const dots = Math.min(v.n, 7);
+  const note = v.n === 0 ? `記錄 ${v.log} 天`
+             : (isT && streakPending()) ? "今天還沒收工" : "";
+  const badge = `<div class="streakbar ${gold?"gold":""}">
+      <span class="streak-n">${v.n > 0 ? `連續 ${v.n} 天` : `連續記錄 ${v.log} 天`}</span>
+      <span class="streak-dots" aria-hidden="true">${"<i></i>".repeat(dots)}${
+        v.n > 7 ? `<span>+${v.n-7}</span>` : ""}</span>
+      ${note ? `<span class="streak-note">${note}</span>` : ""}
+    </div>
+    <div class="streak-word" id="revWord" role="button" tabindex="0"
+      aria-live="polite" aria-label="貓咪說的話，點一下換一句">${reviewWord}</div>`;
+
+  return head + `<div class="sheet-body">
+      ${stats}${bars}
+      <div class="sec-title" style="padding:6px 4px 0">這天吃了什麼</div>
+      ${list}${badge}
+    </div>
+    <div class="rev-acts">
+      <button class="btn btn-soft" data-closesheet>知道了</button>
+      <button class="btn btn-main" id="shareBtn" disabled>分享圖卡</button>
+    </div>`;
+}
+
+function openReview(d){
+  reviewDate = (d && d <= today()) ? d : today();
+  reviewNudge = 0;
+  reviewWord = streakLine(reviewDate, 0);
+  markReviewSeen(reviewDate);
+  $("#sheet").innerHTML = reviewHtml(reviewDate);
+  $("#backdrop").classList.add("open");
+  paintReviewBars();
+  const h = $("#revDate"); if(h) h.focus();
+  if(hasLog(reviewDate)) prepareCard(reviewDate);
+}
+function paintReviewBars(){
+  const pf = $("#revProFill");
+  if(!pf) return;
+  const t = totalsOf(reviewDate), limit = kcalLimit(), pt = S.settings.proteinTarget;
+  const set = (fill, ratio, color, over) => {
+    fill.style.width = "0%";
+    fill.style.backgroundColor = color;
+    fill.classList.toggle("over", !!over);
+    requestAnimationFrame(()=>requestAnimationFrame(()=>{
+      fill.style.width = Math.min(ratio,1)*100 + "%";
+    }));
+  };
+  const pr = t.protein/pt, kr = t.kcal/limit;
+  set(pf, pr, pr>=1 ? "var(--mint)" : "var(--pink)", false);
+  set($("#revKcalFill"), kr, kr>1 ? "var(--peach)" : "var(--yellow)", kr>1);
+  tween($("#revProNum"),  t.protein);
+  tween($("#revKcalNum"), t.kcal);
+}
+/* 點一下換一句：圖卡要跟著重畫，不然分享出去的話跟畫面上不一樣 */
+function paintReviewWord(){
+  const el = $("#revWord");
+  if(!el) return;
+  reviewNudge++;
+  reviewWord = streakLine(reviewDate, reviewNudge);
+  el.innerHTML = reviewWord;
+  prepareCard(reviewDate);
+}
+
+/* ============================ 分享圖卡 ============================ */
+/* 版面用 360×450 的設計座標寫，輸出時整個放大 3 倍＝1080×1350（IG 4:5 不會被裁）。
+   不引 html2canvas：多一個檔要顧離線快取，而且它畫 CSS 漸層與 ::before 背景圖常常糊掉 */
+const CARD_W = 1080, CARD_H = 1350, CARD_S = 3;
+const CV = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim() || "#000";
+
+/* 貓咪的 base64 寫在 CSS 的 .hero-cat::before 裡，直接跟瀏覽器要，
+   不用把那串很長的字搬進 JS */
+let catUri;
+function catDataUri(){
+  if(catUri !== undefined) return catUri;
+  const probe = document.createElement("div");
+  probe.className = "hero-cat";
+  probe.style.cssText = "position:absolute;left:-9999px;top:0;visibility:hidden";
+  document.body.appendChild(probe);
+  const bg = getComputedStyle(probe, "::before").backgroundImage || "";
+  probe.remove();
+  const m = bg.match(/url\(["']?(data:image\/[^"')]+)["']?\)/);
+  catUri = m ? m[1] : "";
+  return catUri;
+}
+let catImg;
+function loadCat(){
+  if(catImg !== undefined) return Promise.resolve(catImg);
+  const uri = catDataUri();
+  if(!uri) return Promise.resolve(catImg = null);
+  return new Promise(res => {
+    const im = new Image();
+    im.onload  = () => res(catImg = im);
+    im.onerror = () => res(catImg = null);   // 載不到就不畫貓，不讓整張圖失敗
+    im.src = uri;
+  });
+}
+/* 字體一定要等載入完，不然畫出來是系統預設字 */
+async function readyFonts(){
+  if(!document.fonts) return;
+  try{
+    await Promise.all([
+      document.fonts.load('800 18px "Baloo 2"'),
+      document.fonts.load('800 28px "Nunito"'),
+      document.fonts.load('700 12px "Noto Sans TC"'),
+      document.fonts.load('500 12px "Noto Sans TC"'),
+    ]);
+    await document.fonts.ready;
+  }catch(e){}
+}
+
+function rrect(x, a, b, w, h, r){
+  if(x.roundRect){ x.beginPath(); x.roundRect(a, b, w, h, r); return; }
+  x.beginPath();
+  x.moveTo(a+r, b);
+  x.arcTo(a+w, b,   a+w, b+h, r);
+  x.arcTo(a+w, b+h, a,   b+h, r);
+  x.arcTo(a,   b+h, a,   b,   r);
+  x.arcTo(a,   b,   a+w, b,   r);
+  x.closePath();
+}
+const F = (x, font, color, align) => { x.font = font; x.fillStyle = color; x.textAlign = align || "left"; };
+/* 中文沒有空白可以斷行，超長就截字加 …（外食便當名字很容易破版） */
+function ellip(x, str, max){
+  if(x.measureText(str).width <= max) return str;
+  let lo = 0, hi = str.length;
+  while(lo < hi){
+    const mid = (lo + hi + 1) >> 1;
+    if(x.measureText(str.slice(0, mid) + "…").width <= max) lo = mid; else hi = mid - 1;
+  }
+  return str.slice(0, lo) + "…";
+}
+/* 標點不能落在行首（禁則），寧可讓那一行稍微超出去，也不要留一個孤零零的句號 */
+const NO_LINE_START = "。，、；：！？）」』】〉》”’…・·)]}!?,.;:";
+function wrapText(x, str, max, maxLines){
+  const lines = [];
+  let cur = "", rest = str;
+  for(const ch of str){
+    rest = rest.slice(ch.length);
+    if(cur && x.measureText(cur + ch).width > max && NO_LINE_START.indexOf(ch) < 0){
+      lines.push(cur);
+      cur = ch;
+      if(lines.length === maxLines - 1){        // 最後一行交給 ellip 收尾
+        lines.push(ellip(x, cur + rest, max));
+        return lines;
+      }
+    } else cur += ch;
+  }
+  if(cur) lines.push(cur);
+  return lines;
+}
+
+const FONT_NUM  = w => `${w} "Nunito","Noto Sans TC",sans-serif`;
+const FONT_DISP = w => `${w} "Baloo 2","Noto Sans TC",sans-serif`;
+const FONT_BODY = w => `${w} "Noto Sans TC",sans-serif`;
+
+function cardBar(x, bx, by, bw, label, val, tail, ratio, color, warn){
+  F(x, FONT_BODY("500 12px"), CV("--ink"), "left");
+  x.fillText(label, bx, by);
+  F(x, FONT_BODY("600 10.5px"), CV("--ink-60"), "right");
+  x.fillText(tail, bx + bw, by);
+  const tw = x.measureText(tail).width;
+  F(x, FONT_NUM("800 15px"), warn ? CV("--peach-deep") : CV("--ink"), "right");
+  x.fillText(String(val), bx + bw - tw - 4, by);
+  x.fillStyle = CV("--sunk");
+  rrect(x, bx, by + 7, bw, 7, 3.5); x.fill();
+  const w = Math.min(Math.max(ratio, 0), 1) * bw;
+  if(w > 0){ x.fillStyle = color; rrect(x, bx, by + 7, Math.max(w, 7), 7, 3.5); x.fill(); }
+}
+
+async function renderCard(d){
+  await readyFonts();
+  await loadCat();
+
+  const cv = document.createElement("canvas");
+  cv.width = CARD_W; cv.height = CARD_H;
+  const x = cv.getContext("2d");
+  x.scale(CARD_S, CARD_S);
+
+  const t = totalsOf(d), limit = kcalLimit(), pt = S.settings.proteinTarget, def = deficitOf(t);
+  const v = streakVars(d), isT = d === today(), dObj = fromIso(d);
+  const showT = S.settings.shareTargets !== false;
+  const ink = CV("--ink"), ink60 = CV("--ink-60"), ink30 = CV("--ink-30");
+
+  /* 1. 背景：跟 App 同一組漸層 */
+  const g = x.createLinearGradient(0, 0, 140, 440);
+  g.addColorStop(0, "#FFE9A8"); g.addColorStop(.48, "#FFD3E2"); g.addColorStop(1, "#CFE8FF");
+  x.fillStyle = g; x.fillRect(0, 0, 360, 450);
+
+  /* 2. 白卡 */
+  x.save();
+  x.shadowColor = "rgba(61,58,78,.18)"; x.shadowBlur = 16; x.shadowOffsetY = 5;
+  x.fillStyle = CV("--card");
+  rrect(x, 12, 12, 336, 426, 20); x.fill();
+  x.restore();
+
+  /* 3. 標題列 */
+  F(x, FONT_DISP("800 16px"), CV("--pink-cta"), "left");
+  x.fillText(S.settings.shareName === false ? "飯盆" : `${S.settings.name || "我"} 的飯盆`, 32, 50);
+  F(x, FONT_NUM("700 12px"), ink60, "right");
+  x.fillText(`${dObj.getMonth()+1}/${dObj.getDate()}（${WEEK[dObj.getDay()]}）`, 328, 50);
+
+  /* 4. 三個數字 */
+  const cols = [81, 180, 279];
+  const vals = [
+    {s:(def>=0?"−":"+") + r0(Math.abs(def)), c:def>=0?CV("--mint-deep"):CV("--peach-deep"), num:true},
+    {s:String(r0(t.protein)),                c:proHit(t)?CV("--mint-deep"):ink,             num:true},
+    {s:dayHit(t)?"雙達標":(kcalHit(t)||proHit(t))?"差一點":"未達標",
+     c:dayHit(t)?CV("--mint-deep"):ink60, num:false},
+  ];
+  const labs = [def>=0?"赤字 kcal":"盈餘 kcal", "蛋白質 g", isT?"今天的結果":"這天的結果"];
+  vals.forEach((o, i) => {
+    F(x, o.num ? FONT_NUM("800 27px") : FONT_DISP("800 19px"), o.c, "center");
+    x.fillText(o.s, cols[i], 96);
+    F(x, FONT_BODY("400 10px"), ink60, "center");
+    x.fillText(labs[i], cols[i], 113);
+  });
+
+  /* 5. 兩條進度條 */
+  cardBar(x, 32, 138, 296, "蛋白質", r0(t.protein), showT ? `/ ${pt} g` : "g",
+          t.protein / pt, proHit(t) ? CV("--mint") : CV("--pink"), false);
+  cardBar(x, 32, 172, 296, "熱量", r0(t.kcal), showT ? `/ ${limit} kcal` : "kcal",
+          t.kcal / limit, t.kcal > limit ? CV("--peach") : CV("--yellow"), t.kcal > limit);
+
+  /* 6. 吃了什麼（熱量大的排前面，最多 6 列） */
+  x.strokeStyle = CV("--line"); x.lineWidth = 1;
+  x.beginPath(); x.moveTo(32, 201); x.lineTo(139, 201);
+                 x.moveTo(221, 201); x.lineTo(328, 201); x.stroke();
+  F(x, FONT_BODY("700 11px"), ink30, "center");
+  x.fillText(isT ? "今天吃了什麼" : "這天吃了什麼", 180, 205);
+
+  const rows = MEALS.flatMap(m => dayOf(d).meals[m.id] || [])
+    .map(e => ({name: e.name + (e.servings !== 1 ? ` ×${e.servings}` : ""),
+                kcal: e.kcal * e.servings, pro: e.protein * e.servings}))
+    .sort((a, b) => b.kcal - a.kcal);
+  const cut  = rows.length > 6 ? 5 : 6;
+  const show = rows.slice(0, cut);
+  show.forEach((r, i) => {
+    const y = 228 + i * 21;
+    F(x, FONT_BODY("500 12.5px"), ink, "left");
+    x.fillText(ellip(x, r.name, 150), 32, y);
+    F(x, FONT_NUM("800 12.5px"), CV("--pink-deep"), "right");
+    x.fillText(String(r0(r.pro)), 262, y);
+    F(x, FONT_BODY("600 9px"), ink30, "right");
+    x.fillText("g", 272, y);
+    F(x, FONT_NUM("800 12.5px"), ink, "right");
+    x.fillText(String(r0(r.kcal)), 304, y);
+    F(x, FONT_BODY("600 9px"), ink30, "right");
+    x.fillText("kcal", 328, y);
+  });
+  if(rows.length > cut){
+    F(x, FONT_BODY("500 11px"), ink30, "center");
+    x.fillText(`還有 ${rows.length - cut} 項`, 180, 228 + cut * 21);
+  }
+
+  /* 7. 連續徽章＋特殊文字 */
+  const gold = isGold(v.n) && (!isT || dayHit(t));
+  if(gold){
+    const gg = x.createLinearGradient(32, 346, 328, 416);
+    gg.addColorStop(0, "#FFF3CC"); gg.addColorStop(1, "#FFE49A");
+    x.fillStyle = gg;
+  } else x.fillStyle = CV("--sunk");
+  rrect(x, 32, 346, 296, 70, 16); x.fill();
+
+  const label = v.n > 0 ? `連續 ${v.n} 天` : `連續記錄 ${v.log} 天`;
+  F(x, FONT_DISP("800 12px"), "#FFF9F0", "left");
+  const pw = x.measureText(label).width + 22;
+  x.fillStyle = CV("--pink-cta");
+  rrect(x, 44, 358, pw, 21, 10.5); x.fill();
+  F(x, FONT_DISP("800 12px"), "#FFF9F0", "center");
+  x.fillText(label, 44 + pw / 2, 372.5);
+  /* 圓點只是裝飾，天數由上面的文字負責講清楚 */
+  x.fillStyle = CV("--mint-deep");
+  for(let i = 0; i < Math.min(v.n, 7); i++){
+    x.beginPath(); x.arc(44 + pw + 12 + i * 9, 368.5, 3.5, 0, Math.PI * 2); x.fill();
+  }
+
+  F(x, FONT_BODY("500 11.5px"), ink, "left");
+  const word = (reviewWord && d === reviewDate ? reviewWord : streakLine(d, 0)).replace(/<[^>]*>/g, "");
+  wrapText(x, word, 200, 2).forEach((ln, i) => x.fillText(ln, 44, 394 + i * 14));
+
+  /* 8. 貓咪 */
+  if(catImg) x.drawImage(catImg, 262, 352, 58, 52);
+
+  /* 9. 頁尾 */
+  F(x, FONT_BODY("600 9.5px"), ink30, "center");
+  x.fillText("飯盆・每天 10 秒記一餐", 180, 430);
+
+  return cv;
+}
+
+function cardAlt(d){
+  const t = totalsOf(d), v = streakVars(d), dObj = fromIso(d);
+  return `${dObj.getMonth()+1} 月 ${dObj.getDate()} 日，熱量 ${r0(t.kcal)}／上限 ${kcalLimit()}，`
+       + `蛋白質 ${r0(t.protein)}／${S.settings.proteinTarget}，`
+       + (v.n > 0 ? `連續 ${v.n} 天雙達標` : `這天未雙達標`);
+}
+
+/* iOS 規定 navigator.share() 要在使用者手勢的同一個 task 裡呼叫，
+   而 toBlob 是非同步的 → 面板一打開就先把 PNG 產好放著，按鈕只負責分享 */
+let cardBlob = null, cardUrl = null, cardDate = null;
+function releaseCard(){
+  if(cardUrl) URL.revokeObjectURL(cardUrl);
+  cardBlob = null; cardUrl = null; cardDate = null;
+}
+async function prepareCard(d){
+  releaseCard();
+  const btn0 = $("#shareBtn");
+  if(btn0){ btn0.disabled = true; btn0.textContent = "圖卡準備中"; }
+  try{
+    const cv = await renderCard(d);
+    const blob = await new Promise(res => cv.toBlob(res, "image/png"));
+    if(!blob) throw new Error("toBlob 沒有回傳");
+    cardBlob = blob; cardUrl = URL.createObjectURL(blob); cardDate = d;
+    const b = $("#shareBtn");
+    if(b && reviewDate === d){ b.disabled = false; b.textContent = "分享圖卡"; }
+  }catch(e){
+    const b = $("#shareBtn");
+    if(b){ b.disabled = true; b.textContent = "圖卡產不出來"; }
+    toast("圖卡產不出來，晚點再試喵");
+  }
+}
+function shareCard(){
+  if(!cardBlob || !cardUrl) return;
+  const t = totalsOf(cardDate);
+  const summary = `${shortDate(cardDate)} 飯盆紀錄：${r0(t.kcal)} kcal・蛋白 ${r0(t.protein)} g`;
+  let file = null;
+  try{ file = new File([cardBlob], `飯盆-${cardDate}.png`, {type:"image/png"}); }catch(e){}
+  if(file && navigator.share && navigator.canShare && navigator.canShare({files:[file]})){
+    navigator.share({files:[file], text:summary}).catch(err => {
+      if(err && err.name === "AbortError") return;   // 使用者自己取消不算失敗
+      openCardModal();
+    });
+    return;
+  }
+  openCardModal();
+}
+function openCardModal(){
+  if(!cardUrl) return;
+  const img = $("#cardImg");
+  img.src = cardUrl;
+  img.alt = cardAlt(cardDate);
+  const dl = $("#cardDl");
+  dl.href = cardUrl;
+  dl.download = `飯盆-${cardDate}.png`;
+  $("#cardModal").classList.add("open");
+}
+function closeCardModal(){
+  const m = $("#cardModal");
+  if(!m || !m.classList.contains("open")) return;
+  m.classList.remove("open");
+  $("#cardImg").src = "";
+}
+
 /* ============================ 記錄面板 ============================ */
 let sheetMeal = "breakfast";
-let sheetMode = "add";      // add＝新增一筆，edit＝修改既有那筆
+let sheetMode = "add";      // add＝記今天，backfill＝補記過去某天，edit＝修改既有那筆
 let logDate = today();      // 這次要寫進哪一天；補記時＝過去的某一天
 let editId = null;
 const emptyDraft = () => ({name:"", kcal:"", protein:"", save:false, servings:"1"});
@@ -1123,15 +1795,28 @@ function captureDraft(){
            servings: g("nfServ") ? g("nfServ").value : draft.servings};
 }
 
-function openSheet(d){
+/* 右下角 ＋：永遠記到今天，不需要選日期 */
+function openSheet(){
   sheetMode = "add"; editId = null;
-  logDate = (d && d <= today()) ? d : today();   // 只能補過去，不能記未來
+  logDate = today();
   sheetMeal = autoMeal();
   draft = emptyDraft();
   renderSheet(false);
   $("#backdrop").classList.add("open");
 }
+/* 補記：日期已經在月曆上選好了，這個彈窗只負責記到那一天 */
+function openBackfill(d){
+  if(!d || d >= today()){ openSheet(); return; }   // 今天走一般記錄；未來不能記
+  sheetMode = "backfill"; editId = null;
+  logDate = d;
+  draft = emptyDraft();
+  renderSheet(false);
+  $("#backdrop").classList.add("open");
+}
+const SERVINGS = ["0.5", "1", "1.5", "2"];
 const closeSheet = () => {
+  closeCardModal();
+  releaseCard();
   /* 先收鍵盤再關面板：iOS 若停在輸入框聚焦狀態，視窗會維持放大／偏移造成跑版 */
   const focused = document.activeElement;
   if(focused && typeof focused.blur === "function") focused.blur();
@@ -1153,6 +1838,7 @@ function openEdit(id, d = today()){
 function editSumText(){
   const k = parseFloat(draft.kcal), p = parseFloat(draft.protein), n = parseFloat(draft.servings);
   if(isNaN(k) || isNaN(p) || isNaN(n)) return "這筆合計 —";
+  if(n === 1) return `這筆 <b>${r0(k)} kcal・蛋白 ${r0(p)} g</b>`;
   return `這筆合計 <b>${r0(k*n)} kcal・蛋白 ${r0(p*n)} g</b>`;
 }
 function autoMeal(){
@@ -1175,6 +1861,7 @@ function renderSheet(capture = true){
   if(capture) captureDraft();
   const backfill = logDate !== today();
   const list = MEALS.flatMap(x => dayOf(logDate).meals[x.id] || []);
+  const dObj = fromIso(logDate);
   const s = sumEntries(list);
   const room = kcalLimit() - s.kcal, needP = S.settings.proteinTarget - s.protein;
   const headSum = (room >= 0 ? `還能吃 ${r0(room)} kcal` : `已超出上限 ${r0(-room)} kcal`)
@@ -1187,8 +1874,11 @@ function renderSheet(capture = true){
     <div class="grab"></div>
     <div class="sheet-head">
       <div>${sheetMode==="edit" ? `<div class="sheet-title">編輯紀錄${backfill ? `・${dayLabel(logDate)}` : ""}</div>`
-             : backfill ? `<div class="sheet-title">補記${sp(dayLabel(logDate))}</div>` : ""}
-        <div style="font-size:11.5px;color:var(--ink-60)">${headSum}</div></div>
+             : sheetMode==="backfill"
+               ? `<div class="sheet-title"><span class="kind-tag">補記</span>${dObj.getMonth()+1} 月 ${dObj.getDate()} 日（星期${WEEK[dObj.getDay()]}）</div>`
+               : `<div class="sheet-title">記錄今天</div>`}
+        <div style="font-size:11.5px;color:var(--ink-60)">${
+          sheetMode==="backfill" ? `這天已記 ${list.length} 筆・` : ""}${headSum}</div></div>
       <button class="x" id="closeSheet" aria-label="關閉">✕</button>
     </div>`;
 
@@ -1215,26 +1905,16 @@ function renderSheet(capture = true){
     return;
   }
 
-  /* 日期列：今天／昨天／前天一點就切，再遠的日子用日期選單 */
-  const t0 = today();
-  const quick = [[t0, "今天"], [iso(addDays(new Date(), -1)), "昨天"], [iso(addDays(new Date(), -2)), "前天"]];
-  const custom = !quick.some(([d]) => d === logDate);
-  const dateBar = `
-      <div class="datebar">
-        <div class="segrow">
-          ${quick.map(([d, label]) => `<button class="seg" data-logdate="${d}"
-            aria-pressed="${!custom && d === logDate}">${label}</button>`).join("")}
-          <label class="seg segdate" aria-pressed="${custom}">${custom ? shortDate(logDate) : "選日期"}
-            <input type="date" id="nfDate" max="${t0}" value="${logDate}" aria-label="要記到哪一天"></label>
-        </div>
-        ${backfill ? `<div class="datenote">這些食物會記到 <b>${dayLabel(logDate)}</b>，不算進今天</div>` : ""}
-      </div>`;
+  const isBack = sheetMode === "backfill";
+  const servRow = `<div class="servrow"><span>份數</span>
+      <div class="segrow" role="group" aria-label="份數">${SERVINGS.map(n => `<button class="seg" data-serv="${n}"
+        aria-pressed="${String(draft.servings) === n}">×${n}</button>`).join("")}</div></div>`;
 
   $("#sheet").innerHTML = head + `
     <div class="sheet-body">
-      ${dateBar}
+      ${isBack ? `<div class="backnote">這些食物會記到 <b>${dayLabel(logDate)}</b>，不會算進今天</div>` : ""}
       <div class="block">
-        <div class="block-h"><b>輸入食物</b><span>記到${dayTag(logDate)}</span></div>
+        <div class="block-h"><b>輸入食物</b><span>熱量、蛋白質填單份的</span></div>
         <div class="formgrid">
           <div class="field span2"><label>食物名稱<i class="req">＊</i></label>
             <input id="nfName" value="${v("name")}" placeholder="例：南椰紅咖哩雞絞肉"></div>
@@ -1243,11 +1923,13 @@ function renderSheet(capture = true){
           <div class="field"><label>蛋白質 g<i class="req">＊</i></label>
             <input id="nfPro" type="number" inputmode="decimal" value="${v("protein")}" placeholder="38"></div>
         </div>
+        ${servRow}
+        <div class="editsum" id="addSum">${editSumText()}</div>
         <label style="display:flex;align-items:center;gap:8px;font-size:12.5px">
           <input type="checkbox" id="nfSave" ${draft.save ? "checked" : ""}
             style="width:17px;height:17px;accent-color:var(--pink-deep)">
           存進常吃清單</label>
-        <button class="btn btn-main" id="nfAdd">${backfill ? `補記到${dayTag(logDate)}` : "紀錄飯盆"}</button>
+        <button class="btn btn-main" id="nfAdd">${isBack ? `補記到${dayTag(logDate)}` : "紀錄飯盆"}</button>
       </div>
 
       <div class="food-key">標籤右側數字＝單份的 熱量 kcal ／ <b>蛋白質 g</b></div>
@@ -1297,12 +1979,14 @@ function celebrateIfHit(d){
   const now = dayHit(totalsOf(today()));
   const justHit = now && !lastHit;
   if(justHit) stars();
+  if(justHit && isMilestone(streakNow())) setTimeout(stars, 420);   // 里程碑值得噴兩次
   lastHit = now;
   return justHit;
 }
 
 /* ---- 已紀錄提示 modal ---- */
 let doneTimer = null;
+let pendingReview = false;      // 大里程碑（≥30 天）等提示關掉後自動打開回顧
 function showRecorded(food, servings, justHit, d = today()){
   const t = totalsOf(d), back = d !== today();
   $("#doneTitle").textContent = back ? `已補記到${sp(dayLabel(d))}` : "已紀錄";
@@ -1313,14 +1997,19 @@ function showRecorded(food, servings, justHit, d = today()){
     `${back ? dayLabel(d) : "今日"}累計 ${r0(t.kcal)} / 上限 ${kcalLimit()} kcal`
     + `（${room>=0 ? `還能吃 ${r0(room)}` : `超出 ${r0(-room)}`} kcal）<br>`
     + `蛋白質 ${r0(t.protein)} / ${S.settings.proteinTarget} g`
-    + (justHit ? `<div class="donehit">赤字＋蛋白質都達標 🎉</div>` : "");
+    + (justHit ? `<div class="donehit">${
+        isMilestone(streakNow()) ? esc(milestoneWord(streakNow())) : "赤字＋蛋白質都達標 🎉"}</div>` : "");
+  $("#doneReview").hidden = !justHit;
+  pendingReview = justHit && streakNow() >= 30 && isMilestone(streakNow());
   $("#doneModal").classList.add("open");
   clearTimeout(doneTimer);
-  doneTimer = setTimeout(closeDone, justHit ? 3200 : 2200);
+  /* 達標時多留一點時間，讓人來得及按「看今天的回顧」 */
+  doneTimer = setTimeout(closeDone, justHit ? 4200 : 2200);
 }
 function closeDone(){
   clearTimeout(doneTimer);
   $("#doneModal").classList.remove("open");
+  if(pendingReview){ pendingReview = false; setTimeout(() => openReview(today()), 260); }
 }
 function toast(msg, undo){
   const t = $("#toast");
@@ -1468,16 +2157,32 @@ document.addEventListener("click", ev => {
   if(hit("#closeSheet"))        { closeSheet(); return; }
   if(ev.target.id === "backdrop"){ closeSheet(); return; }
   if(hit("#doneOk") || ev.target.id === "doneModal"){ closeDone(); return; }
+  if(hit("#doneReview"))        { pendingReview = false; closeDone(); openReview(today()); return; }
+
+  /* ---- 回顧與分享 ---- */
+  if(hit("[data-closesheet]"))  { closeSheet(); return; }
+  if((el = hit("[data-review]"))){ openReview(el.dataset.review); return; }
+  if(hit("#revWord"))           { paintReviewWord(); return; }
+  if(hit("#shareBtn"))          { shareCard(); return; }
+  if(hit("#cardClose") || ev.target.id === "cardModal"){ closeCardModal(); return; }
+  if(hit("#nudgeX"))            { dismissNudge(); render(); return; }
+  if((el = hit("[data-toggle]"))){
+    const k = el.dataset.toggle;
+    S.settings[k] = !(S.settings[k] !== false);
+    save(); render(); return;
+  }
 
   if((el = hit("[data-add]")))   {
     const f = S.favorites.find(x=>x.id===el.dataset.add);
     if(!f) return;
     /* 只把資料帶進上方輸入區，讓使用者確認／微調後再按「紀錄飯盆」 */
+    /* 份數沿用剛剛選的：先點 ×2 再點標籤，不該被打回 ×1 */
+    captureDraft();
     draft = {name:f.name, kcal:String(f.kcal), protein:String(f.protein),
-             save:false, servings:"1"};
+             save:false, servings:draft.servings || "1"};
     renderSheet(false);
     const body = $("#sheet .sheet-body"); if(body) body.scrollTop = 0;
-    toast(`已帶入「${f.name}」，確認後按紀錄飯盆`);
+    toast(`已帶入「${f.name}」，確認份數後送出`);
     return;
   }
   if((el = hit("[data-swipedel]"))){ removeRow(el.closest(".swipe")); return; }
@@ -1488,7 +2193,9 @@ document.addEventListener("click", ev => {
     captureDraft();
     const name = draft.name.trim();
     const kcal = parseFloat(draft.kcal), pro = parseFloat(draft.protein);
+    const serv = parseFloat(draft.servings);
     if(!name || isNaN(kcal) || isNaN(pro)){ toast("名稱、熱量、蛋白質要填"); return; }
+    if(isNaN(serv) || serv <= 0){ toast("份數要大於 0"); return; }
     const food = {name, unit:"份", kcal, protein:pro, fat:0, carbs:0};
     const fav = S.favorites.find(x => x.name === name);
     if(fav){ fav.useCount++; fav.lastUsedAt = new Date().toISOString(); }
@@ -1497,15 +2204,17 @@ document.addEventListener("click", ev => {
       const e = document.getElementById(id); if(e) e.value = "";
     });
     draft = emptyDraft();
-    addEntry(food, 1); return;
+    addEntry(food, serv); return;
   }
 
-  if((el = hit("[data-backfill]"))){ openSheet(el.dataset.backfill); return; }
-  if((el = hit("[data-logdate]"))) { captureDraft(); logDate = el.dataset.logdate; renderSheet(false); return; }
-  if(hit(".segdate"))           {
-    /* 電腦瀏覽器點日期欄不一定會彈面板，能叫就叫一下 */
-    const inp = $("#nfDate");
-    if(inp && inp.showPicker){ try{ inp.showPicker(); }catch(e){} }
+  if((el = hit("[data-backfill]"))){ openBackfill(el.dataset.backfill); return; }
+  /* 選份數只換按鈕狀態與合計，不重畫整個面板，打到一半的字和鍵盤都不會被打斷 */
+  if((el = hit("[data-serv]")))    {
+    captureDraft();
+    draft.servings = el.dataset.serv;
+    document.querySelectorAll("[data-serv]").forEach(b =>
+      b.setAttribute("aria-pressed", b.dataset.serv === draft.servings));
+    const sum = $("#addSum"); if(sum) sum.innerHTML = editSumText();
     return;
   }
   if((el = hit("[data-day]")))  { selDate = el.dataset.day; render(); return; }
@@ -1521,13 +2230,6 @@ document.addEventListener("click", ev => {
 });
 
 document.addEventListener("change", ev => {
-  if(ev.target.id === "nfDate"){
-    const v = ev.target.value;
-    if(v && v <= today()){ captureDraft(); logDate = v; }
-    else toast("只能補以前的日子，不能記未來");
-    renderSheet(false);
-    return;
-  }
   const el = ev.target.closest("[data-set]");
   if(!el) return;
   const v = parseFloat(el.value);
@@ -1537,15 +2239,19 @@ document.addEventListener("change", ev => {
   lastHit = dayHit(totalsOf(iso(new Date())));
 });
 document.addEventListener("input", ev => {
-  if(sheetMode !== "edit" || !ev.target.closest(".sheet")) return;
+  if(!ev.target.closest(".sheet")) return;
   captureDraft();
-  const el = $("#editSum");
+  const el = $("#editSum") || $("#addSum");
   if(el) el.innerHTML = editSumText();
 });
 document.addEventListener("keydown", ev => {
-  if(ev.key==="Escape"){ closeDone(); closeSheet(); return; }
+  if(ev.key==="Escape"){
+    if($("#cardModal").classList.contains("open")){ closeCardModal(); return; }
+    closeDone(); closeSheet(); return;
+  }
   if(ev.key==="Enter" || ev.key===" "){
     if(ev.target.id === "catBubble"){ ev.preventDefault(); catNudge++; paintCatBubble(); return; }
+    if(ev.target.id === "revWord"){ ev.preventDefault(); paintReviewWord(); return; }
     const fg = ev.target.closest && ev.target.closest(".swipe-fg");
     if(fg){ const row = fg.closest(".swipe");
             ev.preventDefault(); openEdit(row.dataset.entry, row.dataset.date || today()); }
