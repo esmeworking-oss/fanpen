@@ -13,7 +13,7 @@
 <meta name="application-name" content="飯盆">
 <link rel="apple-touch-icon" href="./icons/apple-touch-icon-180.png">
 <link rel="icon" href="./icons/icon-192.png" sizes="192x192" type="image/png">
-<!-- build: 4c585be67b -->
+<!-- build: c1d54485cb -->
 <meta charset="utf-8">
 <title>飯盆</title>
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -165,6 +165,14 @@ input{font:inherit;color:inherit}
 .status.over{color:var(--peach-deep); font-weight:700}
 .status.warn{color:var(--lilac-deep); font-weight:700}
 /* 首頁「還差…」那句話改成三張數字卡：數字在上、文字在下（同紀錄頁的 .stat） */
+.trainrow{display:flex; justify-content:flex-end; margin:0 0 10px}
+.trainbtn{display:inline-flex; align-items:center; gap:6px; border:0; cursor:pointer;
+  padding:6px 11px; border-radius:var(--r-pill); background:var(--sunk); color:var(--ink-60);
+  font-family:var(--body); font-size:12px; font-weight:700;
+  transition:background .2s ease, color .2s ease}
+.trainbtn svg{width:15px; height:15px; fill:none; stroke:currentColor;
+  stroke-width:1.8; stroke-linecap:round}
+.trainbtn[aria-pressed="true"]{background:#EFE9FF; color:var(--lilac-deep)}
 .todaystats{display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin:2px 0 20px}
 .tstat{background:none; border:0; border-radius:0;
   padding:2px 4px; text-align:center}
@@ -334,12 +342,14 @@ input{font:inherit;color:inherit}
 .dow{display:grid;grid-template-columns:repeat(7,1fr);gap:2px;margin-bottom:4px}
 .dow span{text-align:center;font-size:10.5px;font-weight:700;color:var(--ink-30)}
 .cal{display:grid;grid-template-columns:repeat(7,1fr);gap:2px}
-.day{aspect-ratio:1;border-radius:13px;display:flex;flex-direction:column;align-items:center;
+.day{position:relative;aspect-ratio:1;border-radius:13px;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:3px;font-family:var(--num);font-size:12.5px;font-weight:700;color:var(--ink-30);
   transition:background .2s ease}
 .day.has{color:var(--ink)}
 .day.sel{background:#FFE3EC;color:var(--pink-cta);box-shadow:inset 0 0 0 2px var(--pink-deep)}
 .day.today{box-shadow:inset 0 0 0 2px var(--pink-deep)}
+.day.train::before{content:"";position:absolute;top:5px;right:5px;width:4px;height:4px;
+  border-radius:50%;background:var(--lilac-deep);opacity:.8}
 .day .dots{display:flex;gap:2.5px;height:6px}
 .day .dots i{width:6px;height:6px;border-radius:50%}
 .legend{display:flex;flex-direction:column;gap:7px;padding:12px 4px 0}
@@ -547,7 +557,9 @@ const SEED_FOODS = [
 ];
 /* 減脂期：tdee＝維持熱量，deficit＝每天想製造的赤字，兩者相減就是當日熱量上限 */
 const DEFAULTS = {tdee:1730, deficit:300, proteinTarget:105, proteinPerMeal:32, name:"Esme",
-                  shareName:true, shareTargets:true};
+                  shareName:true, shareTargets:true,
+                  /* 健身日：那天多吃 trainBonus，休息日平均補回來，一週總量不變 */
+                  trainBonus:150, trainPerWeek:3, trainBalance:true, trainSince:null};
 
 const uid = () => Math.random().toString(36).slice(2,9);
 const iso = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
@@ -623,6 +635,8 @@ function migrate(s){
     s.settings.tdee = s.settings.kcalTarget;
     delete s.settings.kcalTarget;
   }
+  /* 健身日只從啟用當天開始算，以前的紀錄不能被追溯改判（連續天數會無辜斷掉） */
+  if(!s.settings.trainSince) s.settings.trainSince = iso(new Date());
 }
 
 let S;
@@ -641,12 +655,24 @@ const dayOf = d => S.days[d] || {date:d, meals:{breakfast:[],lunch:[],dinner:[],
 const totalsOf = d => sumEntries(MEALS.flatMap(m => dayOf(d).meals[m.id] || []));
 const hasLog = d => !!S.days[d] && MEALS.some(m => (S.days[d].meals[m.id]||[]).length);
 /* 減脂期：吃超過上限才是問題。上限＝TDEE − 每日赤字 */
-const kcalLimit = () => Math.max(600, S.settings.tdee - S.settings.deficit);
+const baseLimit  = () => Math.max(600, S.settings.tdee - S.settings.deficit);
+const isTrainDay = d => !!(S.days[d] && S.days[d].train);
+/* 休息日要少吃的量：bonus × 練幾次 ÷ 剩下幾天，一週加總剛好抵銷 */
+const restCut = () => {
+  const n = Math.min(Math.max(Math.round(S.settings.trainPerWeek) || 0, 0), 7);
+  return (S.settings.trainBalance === false || n <= 0 || n >= 7)
+    ? 0 : Math.round((S.settings.trainBonus || 0) * n / (7 - n));
+};
+const kcalLimit = (d = today()) => {
+  const base = baseLimit();
+  if(d < (S.settings.trainSince || today())) return base;      // 啟用前的日子照舊
+  return Math.max(600, base + (isTrainDay(d) ? (S.settings.trainBonus || 0) : -restCut()));
+};
 const deficitOf = t => S.settings.tdee - t.kcal;               // 正數＝赤字，負數＝盈餘
-const kcalHit = t => t.kcal <= kcalLimit();
+const kcalHit = (t, d) => t.kcal <= kcalLimit(d);
 const proHit  = t => t.protein >= S.settings.proteinTarget;
-const dayHit  = t => kcalHit(t) && proHit(t);                  // 雙達標＝赤字有做到＋蛋白質吃夠
-const tooLow  = t => t.kcal < kcalLimit()*0.7;                 // 赤字開太大的提醒線
+const dayHit  = (t, d) => kcalHit(t, d) && proHit(t);                  // 雙達標＝赤字有做到＋蛋白質吃夠
+const tooLow  = (t, d) => t.kcal < kcalLimit(d)*0.7;                 // 赤字開太大的提醒線
 
 /* ============================ 連續達標 ============================ */
 const yesterdayIso = () => iso(addDays(new Date(), -1));
@@ -658,7 +684,7 @@ function streakUntil(endIso){
   const first = firstLogged();
   let n = 0, d = endIso;
   while(d >= first){
-    if(!dayHit(totalsOf(d))) break;
+    if(!dayHit(totalsOf(d), d)) break;
     n++;
     d = iso(addDays(fromIso(d), -1));
   }
@@ -666,8 +692,8 @@ function streakUntil(endIso){
 }
 /* 今天還沒過完，所以今天只加分不扣分：連續從昨天往前數，今天達標才 +1。
    一天還沒結束就說你斷了，是最傷人的設計 */
-const streakNow     = () => streakUntil(yesterdayIso()) + (dayHit(totalsOf(today())) ? 1 : 0);
-const streakPending = () => !dayHit(totalsOf(today())) && streakUntil(yesterdayIso()) > 0;
+const streakNow     = () => streakUntil(yesterdayIso()) + (dayHit(totalsOf(today()), today()) ? 1 : 0);
+const streakPending = () => !dayHit(totalsOf(today()), today()) && streakUntil(yesterdayIso()) > 0;
 /* 保底：從來沒有雙達標過的人，至少還有「連續記錄」可以看，不要讓他看到「連續 0 天」 */
 function logStreak(){
   const first = firstLogged();
@@ -678,7 +704,7 @@ function logStreak(){
 }
 /* 歷史最長連續，斷掉的時候拿來安慰用 */
 function bestStreak(){
-  const hits = Object.keys(S.days).filter(d => dayHit(totalsOf(d))).sort();
+  const hits = Object.keys(S.days).filter(d => dayHit(totalsOf(d), d)).sort();
   let best = 0, run = 0, prev = null;
   for(const d of hits){
     run = (prev && d === iso(addDays(fromIso(prev), 1))) ? run + 1 : 1;
@@ -733,6 +759,12 @@ const STREAK_TALK = {
     "連續 1 天。明天再來一次，就叫做連續了。",
   ],
 };
+/* 健身日限定：多出來的額度引導吃碳水，不做碳水達標判定 */
+const TRAIN_TALK = [
+  "今天有練，多的 <b>{room}</b> kcal 拿去吃碗飯喵。",
+  "練完的碳水不是壞人，是把肝醣補回去。",
+  "有練的日子飯盆會多裝一點，別客氣。",
+];
 const fillVars = (line, vals) => line.replace(/\{(\w+)\}/g, (m, k) => k in vals ? vals[k] : m);
 
 function streakVars(d){
@@ -741,12 +773,12 @@ function streakVars(d){
   const next = nextMilestone(n);
   return {n, next, gap: next - n, best: bestStreak(), log: logStreak(),
           left: r0(Math.max(S.settings.proteinTarget - t.protein, 0)),
-          room: r0(Math.max(kcalLimit() - t.kcal, 0))};
+          room: r0(Math.max(kcalLimit(d) - t.kcal, 0))};
 }
 /* ============================ 畫面 ============================ */
 const $ = s => document.querySelector(s);
 const view = $("#view");
-let tab = "today", selDate = iso(new Date()), calMonth = new Date(), trendRange = 7, lastHit = dayHit(totalsOf(iso(new Date())));
+let tab = "today", selDate = iso(new Date()), calMonth = new Date(), trendRange = 7, lastHit = dayHit(totalsOf(today()), today());
 
 const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
 const r0 = n => Math.round(n);
@@ -902,6 +934,7 @@ function catBubbleHtml(){
   else               pool = CAT_TALK[foodMood(last)] || CAT_TALK.def;
   /* 連續 2 天以上就讓貓咪偶爾提一下，點泡泡可以換到 */
   if(sv.n >= 2) pool = pool.concat(streakPending() ? STREAK_TALK.pending : STREAK_TALK.run);
+  if(isTrainDay(today())) pool = pool.concat(TRAIN_TALK);
 
   /* 額度已滿／蛋白質已達標時，別講出「還差 0 g」這種怪句子 */
   const usable = pool.filter(l => (left > 0 || !l.includes("{left}"))
@@ -925,6 +958,16 @@ function paintCatBubble(){
   if(!b) return;
   b.innerHTML = catBubbleHtml();
   b.style.animation = "none"; void b.offsetWidth; b.style.animation = "";
+}
+
+/* 健身日開關。按下去那天的熱量上限就加碼，休息日自動少一點（設定頁可調） */
+function trainChip(d, label){
+  const on = isTrainDay(d);
+  return `<div class="trainrow">
+    <button class="trainbtn" data-train="${d}" aria-pressed="${on}">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 9.5v5M6 7v10M18 7v10M21 9.5v5M6 12h12"/></svg>
+      ${on ? `健身日 +${r0(S.settings.trainBonus || 0)} kcal` : label}</button>
+  </div>`;
 }
 
 /* ---------------- 今天 ---------------- */
@@ -976,6 +1019,7 @@ function viewToday(){
 
   return `<div class="stack">
     <div class="card barcard">
+      ${trainChip(today(), "今天有練")}
       ${stats}
       <div class="bars">
         <div>
@@ -1051,16 +1095,16 @@ function viewHistory(){
     const has = hasLog(ds), t = totalsOf(ds);
     let dots = "";
     if(has){   // 左點＝熱量赤字，右點＝蛋白質，兩個目標同時看得到
-      dots = `<i style="background:${kcalHit(t)?"var(--mint-deep)":"var(--ink-30)"}"></i>`
+      dots = `<i style="background:${kcalHit(t, ds)?"var(--mint-deep)":"var(--ink-30)"}"></i>`
            + `<i style="background:${proHit(t)?"var(--mint-deep)":"var(--ink-30)"}"></i>`;
     }
-    cells.push(`<button class="day ${has?"has":""} ${ds===selDate?"sel":""} ${ds===todayIso?"today":""}"
+    cells.push(`<button class="day ${has?"has":""} ${ds===selDate?"sel":""} ${ds===todayIso?"today":""} ${isTrainDay(ds)?"train":""}"
       data-day="${ds}" aria-label="${ds}">${d}<span class="dots">${dots}</span></button>`);
   }
   const nextDisabled = (y>new Date().getFullYear()) || (y===new Date().getFullYear() && m>=new Date().getMonth());
 
   const t = totalsOf(selDate);
-  const limit = kcalLimit(), def = deficitOf(t);
+  const limit = kcalLimit(selDate), def = deficitOf(t);
   const { proteinTarget } = S.settings;
   const dayLog = MEALS.flatMap(mm => dayOf(selDate).meals[mm.id] || []);
   const future = selDate > todayIso;
@@ -1098,16 +1142,18 @@ function viewHistory(){
           <i class="dot" style="background:var(--ink-30)"></i>未達標</div>
         <div class="legrow"><b>左・熱量</b>有赤字（≤ ${limit}）算達標</div>
         <div class="legrow"><b>右・蛋白質</b>吃到目標（≥ ${proteinTarget} g）算達標</div>
+        <div class="legrow"><b>健身日</b>格子右上角有紫點，那天可以多吃 ${r0(S.settings.trainBonus || 0)} kcal</div>
       </div>
     </div>
     <div class="sec-title">${dObj.getMonth()+1} 月 ${dObj.getDate()} 日${selDate===iso(new Date())?"（今天）":""}${
-      hasLog(selDate) && dayHit(t) ? `<span class="sec-hint">雙達標 🎉</span>` : ""}</div>
+      hasLog(selDate) && dayHit(t, selDate) ? `<span class="sec-hint">雙達標 🎉</span>` : ""}</div>
+    ${future ? "" : trainChip(selDate, "這天有練")}
     ${hasLog(selDate) ? `<div class="card statrow" style="padding:12px">
-      <div class="stat"><b style="color:${kcalHit(t)?"var(--ink)":"var(--peach-deep)"}">${r0(t.kcal)}</b>
+      <div class="stat"><b style="color:${kcalHit(t, selDate)?"var(--ink)":"var(--peach-deep)"}">${r0(t.kcal)}</b>
         <span>熱量／上限 ${limit}</span></div>
       <div class="stat"><b style="color:${proHit(t)?"var(--pink-deep)":"var(--ink-30)"}">${r0(t.protein)}</b>
         <span>蛋白質／目標 ${proteinTarget}</span></div>
-      <div class="stat"><b style="color:${kcalHit(t)?"var(--mint-deep)":"var(--peach-deep)"}">${def>=0?"−":"+"}${r0(Math.abs(def))}</b>
+      <div class="stat"><b style="color:${kcalHit(t, selDate)?"var(--mint-deep)":"var(--peach-deep)"}">${def>=0?"−":"+"}${r0(Math.abs(def))}</b>
         <span>${def>=0?"赤字":"盈餘"} kcal</span></div>
     </div>` : ""}
     ${detail}
@@ -1122,8 +1168,8 @@ function viewTrends(){
   const logged = dates.filter(hasLog);
   const avgD = logged.length ? logged.reduce((a,d)=>a+deficitOf(totalsOf(d)),0)/logged.length : 0;
   const avgP = logged.length ? logged.reduce((a,d)=>a+totalsOf(d).protein,0)/logged.length : 0;
-  const hitBoth = dates.filter(d=>hasLog(d) && dayHit(totalsOf(d))).length;
-  const limit = kcalLimit();
+  const hitBoth = dates.filter(d=>hasLog(d) && dayHit(totalsOf(d), d)).length;
+  const limit = baseLimit();
 
   return `<div class="stack">
     <div class="segrow">
@@ -1137,7 +1183,7 @@ function viewTrends(){
       <div class="stat"><b style="color:var(--mint-deep)">${hitBoth}<span style="font-size:13px;color:var(--ink-30)">/${n}</span></b><span>雙達標天</span></div>
     </div>
     <div class="card chartcard">
-      <div class="chart-h"><b>熱量</b><span>虛線 = 上限 ${limit} kcal・壓在線下</span></div>
+      <div class="chart-h"><b>熱量</b><span>虛線 = 平均上限 ${limit} kcal・壓在線下</span></div>
       <div class="chartbox"><svg class="chart" id="chartK" viewBox="0 0 320 118"></svg>
       <div class="charttip" id="tipK"></div></div>
     </div>
@@ -1159,7 +1205,7 @@ function drawCharts(){
   const dates = Array.from({length:n}, (_,i)=>iso(addDays(new Date(), -(n-1-i))));
   const kv = dates.map(d => hasLog(d) ? totalsOf(d).kcal : null);
   const pv = dates.map(d => hasLog(d) ? totalsOf(d).protein : null);
-  chart($("#chartK"), $("#tipK"), dates, kv, kcalLimit(), "var(--yellow-deep)", "kcal");
+  chart($("#chartK"), $("#tipK"), dates, kv, baseLimit(), "var(--yellow-deep)", "kcal");
   chart($("#chartP"), $("#tipP"), dates, pv, S.settings.proteinTarget, "var(--pink-deep)", "g");
 }
 
@@ -1228,6 +1274,9 @@ function chart(svg, tip, dates, vals, target, color, unit){
 
 /* ---------------- 設定 ---------------- */
 function viewSettings(){
+  const trainLimit = baseLimit() + r0(S.settings.trainBonus || 0), restLimit = baseLimit() - restCut();
+  /* 休息日被扣到比 TDEE 的七成還低＝赤字開太大，會掉肌肉，要講一聲 */
+  const restLow = restLimit < S.settings.tdee * 0.7;
   return `<div class="stack">
     <div class="sec-title">我的目標</div>
     <div class="card" style="padding:6px 16px">
@@ -1239,6 +1288,21 @@ function viewSettings(){
         <div class="numfield"><input type="number" data-set="proteinTarget" value="${S.settings.proteinTarget}"><span>g</span></div></div>
       <div class="row"><div class="rl">每餐蛋白質<small>平均分配比集中一餐更好</small></div>
         <div class="numfield"><input type="number" data-set="proteinPerMeal" value="${S.settings.proteinPerMeal}"><span>g</span></div></div>
+    </div>
+
+    <div class="sec-title">健身日</div>
+    <div class="card" style="padding:6px 16px">
+      <div class="row"><div class="rl">健身日多吃<small>多的額度建議吃碳水，150 kcal ≈ 半碗白飯</small></div>
+        <div class="numfield"><input type="number" data-set="trainBonus" value="${S.settings.trainBonus}"><span>kcal</span></div></div>
+      <div class="row"><div class="rl">每週練幾次<small>用來算休息日要少吃多少</small></div>
+        <div class="numfield"><input type="number" data-set="trainPerWeek" value="${S.settings.trainPerWeek}"><span>次</span></div></div>
+      <div class="row"><div class="rl">休息日補回來<small>${
+        S.settings.trainBalance === false ? "現在只有健身日加碼，一週的赤字會變小"
+          : `休息日少吃 ${restCut()} kcal，一週平均維持 ${baseLimit()}`}</small></div>
+        <button class="sw" role="switch" data-toggle="trainBalance"
+          aria-checked="${S.settings.trainBalance !== false}" aria-label="休息日補回來"></button></div>
+      <div class="row"><div class="rl">目前的上限<small${restLow ? ` style="color:var(--peach-deep)"` : ``}>健身日 ${trainLimit}・休息日 ${restLimit} kcal${
+        restLow ? "。休息日扣太多了，把加碼調小或關掉補回來" : ""}</small></div></div>
     </div>
 
     <div class="sec-title">常吃食物（${S.favorites.length}）</div>
@@ -1531,7 +1595,7 @@ function renderSheet(capture = true){
   const list = MEALS.flatMap(x => dayOf(logDate).meals[x.id] || []);
   const dObj = fromIso(logDate);
   const s = sumEntries(list);
-  const room = kcalLimit() - s.kcal, needP = S.settings.proteinTarget - s.protein;
+  const room = kcalLimit(logDate) - s.kcal, needP = S.settings.proteinTarget - s.protein;
   const headSum = (room >= 0 ? `還能吃 ${r0(room)} kcal` : `已超出上限 ${r0(-room)} kcal`)
     + `・蛋白質${needP > 0 ? `還差 ${r0(needP)} g` : `已達標`}`;
   const favs = S.favorites.slice().sort((a,b)=>b.useCount-a.useCount);
@@ -1644,7 +1708,7 @@ function addEntry(food, servings){
    補記過去的日子不撒星星：那是已經發生過的事，不是現在達成的 */
 function celebrateIfHit(d){
   if(d !== today()) return false;
-  const now = dayHit(totalsOf(today()));
+  const now = dayHit(totalsOf(today()), today());
   const justHit = now && !lastHit;
   if(justHit) stars();
   if(justHit && isMilestone(streakNow())) setTimeout(stars, 420);   // 里程碑值得噴兩次
@@ -1659,9 +1723,9 @@ function showRecorded(food, servings, justHit, d = today()){
   $("#doneTitle").textContent = back ? `已補記到${sp(dayLabel(d))}` : "已紀錄";
   $("#doneFood").innerHTML =
     `${esc(food.name)}${servings!==1?` ×${servings}`:""}　<b>${r0(food.kcal*servings)} kcal・蛋白 ${r0(food.protein*servings)} g</b>`;
-  const room = kcalLimit() - t.kcal;
+  const room = kcalLimit(d) - t.kcal;
   $("#doneSum").innerHTML =
-    `${back ? dayLabel(d) : "今日"}累計 ${r0(t.kcal)} / 上限 ${kcalLimit()} kcal`
+    `${back ? dayLabel(d) : "今日"}累計 ${r0(t.kcal)} / 上限 ${kcalLimit(d)} kcal`
     + `（${room>=0 ? `還能吃 ${r0(room)}` : `超出 ${r0(-room)}`} kcal）<br>`
     + `蛋白質 ${r0(t.protein)} / ${S.settings.proteinTarget} g`
     + (justHit ? `<div class="donehit">${
@@ -1731,7 +1795,7 @@ function deleteEntry(id, d = today()){
 }
 function afterChange(d){
   save();
-  if(d === today()) lastHit = dayHit(totalsOf(d));
+  if(d === today()) lastHit = dayHit(totalsOf(d), d);
   renderSheet();
   render();
 }
@@ -1825,6 +1889,17 @@ document.addEventListener("click", ev => {
   /* ---- 分享 ---- */
   if(hit("#shareToday"))        { shareCard(); return; }
   if(hit("#cardClose") || ev.target.id === "cardModal"){ closeCardModal(); return; }
+  if((el = hit("[data-train]"))){
+    const d = el.dataset.train;
+    if(!S.days[d]) S.days[d] = {date:d, meals:{breakfast:[],lunch:[],dinner:[],snack:[]}};
+    S.days[d].train = !S.days[d].train;
+    save();
+    /* 上限變了，達標狀態要跟著重算，免得下一筆紀錄誤放彩帶 */
+    if(d === today()) lastHit = dayHit(totalsOf(d), d);
+    render();
+    toast(S.days[d].train ? `標成健身日，可以多吃 ${r0(S.settings.trainBonus || 0)} kcal` : "已取消健身日");
+    return;
+  }
   if((el = hit("[data-toggle]"))){
     const k = el.dataset.toggle;
     S.settings[k] = !(S.settings[k] !== false);
@@ -1891,11 +1966,13 @@ document.addEventListener("click", ev => {
 document.addEventListener("change", ev => {
   const el = ev.target.closest("[data-set]");
   if(!el) return;
-  const v = parseFloat(el.value);
-  if(isNaN(v) || v<=0) return;
-  S.settings[el.dataset.set] = v;
+  const k = el.dataset.set, v = parseFloat(el.value);
+  const zeroOk = k === "trainBonus" || k === "trainPerWeek";   // 填 0 等於關掉健身日
+  if(isNaN(v) || v < 0 || (!zeroOk && v <= 0)) return;
+  S.settings[k] = k === "trainPerWeek" ? Math.min(7, Math.round(v)) : v;
   save();
-  lastHit = dayHit(totalsOf(iso(new Date())));
+  if(zeroOk && tab === "settings") render();                   // 讓下面的上限預覽跟著更新
+  lastHit = dayHit(totalsOf(today()), today());
 });
 document.addEventListener("input", ev => {
   if(!ev.target.closest(".sheet")) return;

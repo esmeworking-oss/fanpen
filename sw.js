@@ -1,5 +1,5 @@
 /* 飯盆 service worker — 由 sync-pwa.sh 產生，請勿手動編輯 */
-const BUILD   = "4c585be67b";
+const BUILD   = "c1d54485cb";
 const CORE    = "fanpen-core-" + BUILD;
 const RUNTIME = "fanpen-runtime";
 const ASSETS  = [
